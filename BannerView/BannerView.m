@@ -10,7 +10,7 @@
 
 @interface BannerView ()
 
-#define kPresentingAnimationTimeInSeconds = 1.0
+#define kPresentingAnimationTimeInSeconds 1.0
 
 @property (nonatomic, weak) UIView* parentView;
 
@@ -62,9 +62,9 @@
     if (self.isPresenting) {
         return;
     }
-    
+        
     self.isPresenting = YES;
-    [UIView animateWithDuration: 0.5 animations: ^{
+    [UIView animateWithDuration: kPresentingAnimationTimeInSeconds animations: ^{
         CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
         self.frame = targetPosition;
     } completion: nil];
@@ -75,7 +75,10 @@
         return;
     }
     
-    
+    [UIView animateWithDuration: kPresentingAnimationTimeInSeconds animations: ^{
+        CGRect targetPosition = CGRectMake(0.0, -self.bannerHeight, self.bounds.size.width, self.bannerHeight);
+        self.frame = targetPosition;
+    } completion: nil];
 }
 
 @end
