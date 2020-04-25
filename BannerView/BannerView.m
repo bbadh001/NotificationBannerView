@@ -14,39 +14,42 @@
 
 @property (nonatomic) CGFloat mainTitleLabelTopPadding;
 @property (nonatomic) CGFloat subTitleLabelTopPadding;
+@property (nonatomic) CGFloat bannerHeight;
 
 @end
 
 @implementation BannerView
 
--(void)setupBannerConstraints {
-
-}
-
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
-    self.mainTitleLabelTopPadding = (CGFloat) 8.0;
-    self.subTitleLabelTopPadding = (CGFloat) 8.0;
-    
     UILabel* mainTitleLabel = [UILabel new];
     mainTitleLabel.text = mainTitle;
+    mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     UILabel* subTitleLabel = [UILabel new];
     subTitleLabel.text = subTitle;
     
     [self addSubview: mainTitleLabel];
     [self addSubview: subTitleLabel];
     
-    NSArray* mainTitleLabelConstraints = [NSArray arrayWithObjects: [NSLayoutConstraint constraintWithItem:mainTitle attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.parentView attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0], [NSLayoutConstraint constraintWithItem:mainTitle attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.parentView attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0], nil];
+    NSArray* mainTitleLabelConstraints = [NSArray arrayWithObjects: [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:0], [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0], nil];
     
     [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
     [self addConstraints:mainTitleLabelConstraints];
 }
 
-- (instancetype)init:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView {
-    self = [super initWithFrame: CGRectMake(0.0, 0.0, parentView.bounds.size.width, 48.0)];
+- (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView {
+    CGFloat bannerHeight = (CGFloat) 48.0;
+    self = [super initWithFrame: CGRectMake(0.0,
+                                            bannerHeight,
+                                            parentView.bounds.size.width,
+                                            bannerHeight)];
     if (self != nil) {
         self.parentView = parentView;
-        [self setupBannerConstraints];
+        self.mainTitleLabelTopPadding = (CGFloat) 8.0;
+        self.subTitleLabelTopPadding = (CGFloat) 8.0;
+        self.bannerHeight = (CGFloat) 48.0;
+        
         [self setupLabels:mainTitle subTitle:subTitle];
+        [self setBackgroundColor: UIColor.redColor];
     }
     
     return self;
