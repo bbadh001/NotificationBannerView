@@ -10,7 +10,11 @@
 
 @interface BannerView ()
 
+#define kPresentingAnimationTimeInSeconds = 1.0
+
 @property (nonatomic, weak) UIView* parentView;
+
+@property (nonatomic) BOOL isPresenting;
 
 @property (nonatomic) CGFloat mainTitleLabelTopPadding;
 @property (nonatomic) CGFloat subTitleLabelTopPadding;
@@ -37,17 +41,14 @@
 }
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView {
-    CGFloat bannerHeight = (CGFloat) 48.0;
-    self = [super initWithFrame: CGRectMake(0.0,
-                                            bannerHeight,
-                                            parentView.bounds.size.width,
-                                            bannerHeight)];
+    self = [super init];
     if (self != nil) {
         self.parentView = parentView;
         self.mainTitleLabelTopPadding = (CGFloat) 8.0;
         self.subTitleLabelTopPadding = (CGFloat) 8.0;
         self.bannerHeight = (CGFloat) 48.0;
         
+        self.frame = CGRectMake(0.0, -self.bannerHeight, parentView.bounds.size.width, self.bannerHeight);
         [self setupLabels:mainTitle subTitle:subTitle];
         [self setBackgroundColor: UIColor.redColor];
     }
@@ -57,11 +58,23 @@
 
 #pragma mark Instance Methods
 
--(void)show {
+-(void)present {
+    if (self.isPresenting) {
+        return;
+    }
     
+    self.isPresenting = YES;
+    [UIView animateWithDuration: 0.5 animations: ^{
+        CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
+        self.frame = targetPosition;
+    } completion: nil];
 }
 
 -(void)dismiss {
+    if (!self.isPresenting) {
+        return;
+    }
+    
     
 }
 

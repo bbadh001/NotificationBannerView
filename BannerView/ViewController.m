@@ -20,6 +20,7 @@
     // Do any additional setup after loading the view.
     BannerView* banner = [[BannerView alloc] initWithTitle:@"Main title" subTitle:@"Sub title" parentView:self.view];
     [self.view addSubview:banner];
+    [banner present];
 }
 
 
