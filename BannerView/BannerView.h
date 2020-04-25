@@ -10,6 +10,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef enum BannerPresentationStateType {
+    AnimatingIn,
+    Presenting,
+    AnimatingOut,
+    Hidden
+} BannerPresentationState;
+
 @interface BannerView : UIView
 
 @property (nonatomic, readonly) BOOL isPresenting;

@@ -7,6 +7,7 @@
 //
 
 #import "BannerView.h"
+//#import "BannerPresentationState.m"
 
 @interface BannerView ()
 
@@ -14,15 +15,21 @@
 
 @property (nonatomic, weak) UIView* parentView;
 
-@property (nonatomic) BOOL isPresenting;
+@property (nonatomic) enum BannerPresentationStateType presentationState;
 
 @property (nonatomic) CGFloat mainTitleLabelTopPadding;
 @property (nonatomic) CGFloat subTitleLabelTopPadding;
+
+@property (nonatomic) CGFloat mainTitleLabelLeftPadding;
+@property (nonatomic) CGFloat subTitleLabelLeftPadding;
+
 @property (nonatomic) CGFloat bannerHeight;
 
 @end
 
 @implementation BannerView
+
+#pragma mark Setup and Init Methods
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
     UILabel* mainTitleLabel = [UILabel new];
@@ -34,7 +41,7 @@
     [self addSubview: mainTitleLabel];
     [self addSubview: subTitleLabel];
     
-    NSArray* mainTitleLabelConstraints = [NSArray arrayWithObjects: [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:0], [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0], nil];
+    NSArray* mainTitleLabelConstraints = [NSArray arrayWithObjects: [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:self.mainTitleLabelTopPadding], [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:self.mainTitleLabelLeftPadding], nil];
     
     [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
     [self addConstraints:mainTitleLabelConstraints];
@@ -50,8 +57,11 @@
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView {
     self = [super init];
     if (self != nil) {
-        self.mainTitleLabelTopPadding = (CGFloat) 8.0;
+        self.mainTitleLabelTopPadding = (CGFloat) 16.0;
         self.subTitleLabelTopPadding = (CGFloat) 8.0;
+        
+        self.mainTitleLabelLeftPadding = (CGFloat) 16.0;
+        self.subTitleLabelLeftPadding = (CGFloat) 16.0;
         
         self.bannerHeight = (CGFloat) 48.0;
         self.parentView = parentView;
@@ -69,7 +79,7 @@
 #pragma mark Instance Methods
 
 -(void)present {
-    if (self.isPresenting) {
+    if (self.presentationState != BannerPresentationStateType.) {
         return;
     }
         
@@ -77,7 +87,9 @@
     [UIView animateWithDuration: kPresentingAnimationTimeInSeconds animations: ^{
         CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
         self.frame = targetPosition;
-    } completion: nil];
+    } completion: ^(BOOL finished){
+        self.presentationState = BannerPresentationStat
+    }];
 }
 
 -(void)dismiss {
