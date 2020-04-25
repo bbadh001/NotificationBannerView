@@ -12,10 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface BannerView : UIView
 
-@property (nonatomic, readonly) UIView* mainTitle;
-@property (nonatomic, readonly) UIView* subTitle;
-
--(instancetype)init:(NSString*)mainTitle subTitle:(NSString*)subTitle;
+- (instancetype)init:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView;
 
 -(void)show;
 -(void)dismiss;

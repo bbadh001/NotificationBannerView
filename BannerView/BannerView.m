@@ -10,7 +10,7 @@
 
 @interface BannerView ()
 
-@property (weak) UIViewController* parentView;
+@property (nonatomic, weak) UIView* parentView;
 
 @property (nonatomic) CGFloat mainTitleLabelTopPadding;
 @property (nonatomic) CGFloat subTitleLabelTopPadding;
@@ -20,7 +20,7 @@
 @implementation BannerView
 
 -(void)setupBannerConstraints {
-    
+
 }
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
@@ -41,8 +41,11 @@
     [self addConstraints:mainTitleLabelConstraints];
 }
 
-- (instancetype)init:(NSString *)mainTitle subTitle:(NSString *)subTitle {
-    if (self = [super init]) {
+- (instancetype)init:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView {
+    self = [super initWithFrame: CGRectMake(0.0, 0.0, parentView.bounds.size.width, 48.0)];
+    if (self != nil) {
+        self.parentView = parentView;
+        [self setupBannerConstraints];
         [self setupLabels:mainTitle subTitle:subTitle];
     }
     
