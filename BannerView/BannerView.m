@@ -40,17 +40,27 @@
     [self addConstraints:mainTitleLabelConstraints];
 }
 
+-(void)setupGestureRecongizer {
+    UISwipeGestureRecognizer *swipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipe:)];
+    swipeGesture.direction = UISwipeGestureRecognizerDirectionUp;
+    swipeGesture.numberOfTouchesRequired = 1;
+    [self addGestureRecognizer:swipeGesture];
+}
+
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView {
     self = [super init];
     if (self != nil) {
-        self.parentView = parentView;
         self.mainTitleLabelTopPadding = (CGFloat) 8.0;
         self.subTitleLabelTopPadding = (CGFloat) 8.0;
-        self.bannerHeight = (CGFloat) 48.0;
         
-        self.frame = CGRectMake(0.0, -self.bannerHeight, parentView.bounds.size.width, self.bannerHeight);
-        [self setupLabels:mainTitle subTitle:subTitle];
+        self.bannerHeight = (CGFloat) 48.0;
+        self.parentView = parentView;
+
+        self.frame = CGRectMake(0.0, -self.bannerHeight, self.parentView.bounds.size.width, self.bannerHeight);
         [self setBackgroundColor: UIColor.redColor];
+        
+        [self setupGestureRecongizer];
+        [self setupLabels:mainTitle subTitle:subTitle];
     }
     
     return self;
@@ -79,6 +89,12 @@
         CGRect targetPosition = CGRectMake(0.0, -self.bannerHeight, self.bounds.size.width, self.bannerHeight);
         self.frame = targetPosition;
     } completion: nil];
+}
+
+#pragma mark Gesture Recognizer Methods
+
+- (void)didSwipe:(UISwipeGestureRecognizer*)sender {
+    [self dismiss];
 }
 
 @end
