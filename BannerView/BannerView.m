@@ -99,7 +99,7 @@
     NSLog(@"velo: %f", -kPresentingAnimationVelocity);
     NSLog(@"anim: %f", animationTime);
     
-    [UIView animateWithDuration: animationTime delay:1.0 usingSpringWithDamping:0.6 initialSpringVelocity:-kPresentingAnimationVelocity options:UIViewAnimationOptionCurveEaseIn animations: ^{
+    [UIView animateWithDuration: animationTime delay:0.0 usingSpringWithDamping:0.7 initialSpringVelocity:-kPresentingAnimationVelocity options:UIViewAnimationOptionCurveEaseIn animations: ^{
             CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
             self.frame = targetPosition;
         }
@@ -164,20 +164,26 @@
         }
     } else {
         //not close to edge yet, so move banner wherever the touch guides us
+        CGRect nextPosition = self.frame;
         if (delta.y < 0) {
             //user is guiding the banner up
-            CGRect nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
+            nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
             self.frame = nextPosition;
         } else {
             //user is guiding the banner down
-            if (self.frame.origin.y < 0) {
-                CGRect nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
+            if (self.frame.origin.y <= 0) {
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             } else {
-                CGRect nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
+//                NSLog(@"delta y %f", delta.y);
+//                NSLog(@"sqrt delta y %f", sqrt(delta.y));
+//                NSLog(@"self.frame.origin.y %f", self.frame.origin.y);
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(1/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             }
         }
+        
+        self.frame = nextPosition;
     }
     
     [sender setTranslation:CGPointMake(0, 0) inView:self];
