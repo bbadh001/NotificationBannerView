@@ -7,65 +7,49 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "BDA028C8-5DBF-462F-8DE7-118CD34F8472"
+            uuid = "A986B5DA-5D02-4FF5-98D6-D7ABA0E68DB5"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "BannerView/BannerView.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "116"
-            endingLineNumber = "116"
-            landmarkName = "-handlePan:"
+            startingLineNumber = "102"
+            endingLineNumber = "102"
+            landmarkName = "-dismiss"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "3755BAC1-7B57-4CD2-AF08-DCFBDA625E5B"
+            uuid = "1C43B705-EF66-41E7-A7A4-77C5B0E62662"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "BannerView/BannerView.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "101"
-            endingLineNumber = "101"
+            startingLineNumber = "108"
+            endingLineNumber = "108"
             landmarkName = "-dismissWithVelocity:"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "3755BAC1-7B57-4CD2-AF08-DCFBDA625E5B - 9e962d0c9ba7da63"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "-[BannerView dismissWithVelocity:]"
-                  moduleName = "BannerView"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/brentbadhwar/Desktop/BannerView/BannerView/BannerView.m"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "102"
-                  endingLineNumber = "102"
-                  offsetFromSymbolStart = "158">
-               </Location>
-               <Location
-                  uuid = "3755BAC1-7B57-4CD2-AF08-DCFBDA625E5B - 49736c2a73328cba"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "__34-[BannerView dismissWithVelocity:]_block_invoke"
-                  moduleName = "BannerView"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/brentbadhwar/Desktop/BannerView/BannerView/BannerView.m"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "102"
-                  endingLineNumber = "102"
-                  offsetFromSymbolStart = "15">
-               </Location>
-            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "5540B758-C35C-4DF5-8BED-0790A74A549F"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "BannerView/BannerView.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "112"
+            endingLineNumber = "112"
+            landmarkName = "-dismissWithVelocity:"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

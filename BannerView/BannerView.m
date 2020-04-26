@@ -9,7 +9,9 @@
 #import "BannerView.h"
 #import "BannerPresentationState.h"
 
-#define kPresentingAnimationTimeInSeconds 0.3
+#define kPresentingAnimationTime 0.3
+#define kDefaultDismissalAnimationTime 0.3
+
 #define kDistFromParentViewToAutoDismiss 16
 
 @interface BannerView ()
@@ -79,30 +81,50 @@
 #pragma mark Instance Methods
 
 -(void)present {
+    //only present from hidden state
     if (self.presentationState != BannerPresentationStateHidden) {
         return;
     }
-        
-    [UIView animateWithDuration: kPresentingAnimationTimeInSeconds animations: ^{
-        CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
-        self.frame = targetPosition;
-    } completion: ^(BOOL finished) {
-        self.presentationState = BannerPresentationStatePresenting;
-    }];
+    
+    self.presentationState = BannerPresentationStateAnimatingIn;
+    
+    [UIView animateWithDuration: kPresentingAnimationTime delay:1.0 usingSpringWithDamping:0.6 initialSpringVelocity:kPresentingAnimationTime/self.bannerHeight options:UIViewAnimationOptionCurveEaseIn animations: ^{
+            CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
+            self.frame = targetPosition;
+        }
+        completion: ^(BOOL finished) {
+            self.presentationState = BannerPresentationStatePresenting;
+        }
+    ];
 }
 
--(void)dismissWithVelocity:(CGFloat)pointsPerSecond{
-    if (self.presentationState != BannerPresentationStatePresenting) {
+-(void)dismiss {
+    [self dismissWithVelocity:160.0];
+}
+
+-(void)dismissWithVelocity:(CGFloat)velocity {
+    //only allow for programmatic dismiss only in these two states
+    if (self.presentationState != BannerPresentationStatePresenting &&
+        self.presentationState != BannerPresentationStateTouched) {
         return;
     }
     
-    CGFloat distanceFromBannerToEnd = -self.frame.origin.y;
-    NSTimeInterval animationTime = distanceFromBannerToEnd/pointsPerSecond;
+    self.presentationState = BannerPresentationStateAnimatingOut;
     
-    [UIView animateWithDuration: animationTime animations: ^{
-        CGRect targetPosition = CGRectMake(0.0, -self.bannerHeight, self.bounds.size.width, self.bannerHeight);
-        self.frame = targetPosition;
-    } completion: nil];
+    CGFloat distanceFromBannerToEnd = -self.frame.origin.y;
+    NSTimeInterval animationTime = distanceFromBannerToEnd/velocity;
+    
+    NSLog(@"velo: %f", velocity);
+    NSLog(@"anim: %f", animationTime);
+    
+    [UIView animateWithDuration: 0.3 delay: 0.0 usingSpringWithDamping:0.6 initialSpringVelocity:velocity options:UIViewAnimationOptionCurveEaseIn animations: ^{
+            CGRect targetPosition = CGRectMake(0.0, -self.bannerHeight, self.bounds.size.width, self.bannerHeight);
+            self.frame = targetPosition;
+        }
+        completion: ^(BOOL finished) {
+            self.presentationState = BannerPresentationStateHidden;
+        }
+    ];
 }
 
 #pragma mark Gesture Recognizer Methods
@@ -112,8 +134,8 @@
     NSLog(@"y delta: %f", delta.y);
     
     if (self.frame.origin.y+self.frame.size.height <= kDistFromParentViewToAutoDismiss) {
-        CGPoint pointsPerSecond = [sender velocityInView:self];
-        [self dismissWithVelocity:pointsPerSecond.y];
+        CGPoint velocity = [sender velocityInView:self];
+        [self dismissWithVelocity:velocity.y];
         return;
     }
     

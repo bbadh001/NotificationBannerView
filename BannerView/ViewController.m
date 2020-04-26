@@ -11,6 +11,9 @@
 
 @interface ViewController ()
 
+@property (weak, nonatomic) IBOutlet UIButton *dismissBtn;
+@property (weak, nonatomic) BannerView* bannerView;
+
 @end
 
 @implementation ViewController
@@ -19,9 +22,15 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     BannerView* banner = [[BannerView alloc] initWithTitle:@"Main title" subTitle:@"Sub title" parentView:self.view];
+    self.bannerView = banner;
     [self.view addSubview:banner];
     [banner present];
 }
+
+- (IBAction)dismissBtnTapped:(UIButton *)sender {
+    [self.bannerView dismiss];
+}
+
 
 
 @end

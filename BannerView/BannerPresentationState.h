@@ -10,10 +10,11 @@
 #define BannerPresentationState_h
 
 typedef enum BannerPresentationState {
-    BannerPresentationStateAnimatingIn,
     BannerPresentationStatePresenting,
+    BannerPresentationStateHidden,
+    BannerPresentationStateAnimatingIn,
     BannerPresentationStateAnimatingOut,
-    BannerPresentationStateHidden
+    BannerPresentationStateTouched
 } BannerPresentationState;
 
 

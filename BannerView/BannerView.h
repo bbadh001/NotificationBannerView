@@ -18,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)present;
 -(void)dismiss;
 
-
 @end
 
 NS_ASSUME_NONNULL_END
