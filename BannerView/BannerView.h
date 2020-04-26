@@ -7,19 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "BannerPresentationState.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef enum BannerPresentationStateType {
-    AnimatingIn,
-    Presenting,
-    AnimatingOut,
-    Hidden
-} BannerPresentationState;
-
 @interface BannerView : UIView
-
-@property (nonatomic, readonly) BOOL isPresenting;
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView;
 

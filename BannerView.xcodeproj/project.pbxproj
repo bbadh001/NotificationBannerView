@@ -32,6 +32,7 @@
 		D320AF522453C9BC000BA8B3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		D320AF592453CA09000BA8B3 /* BannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerView.h; sourceTree = "<group>"; };
 		D320AF5A2453CA09000BA8B3 /* BannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BannerView.m; sourceTree = "<group>"; };
+		D320AF8424550EB1000BA8B3 /* BannerPresentationState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerPresentationState.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +78,7 @@
 				D320AF522453C9BC000BA8B3 /* main.m */,
 				D320AF592453CA09000BA8B3 /* BannerView.h */,
 				D320AF5A2453CA09000BA8B3 /* BannerView.m */,
+				D320AF8424550EB1000BA8B3 /* BannerPresentationState.h */,
 			);
 			path = BannerView;
 			sourceTree = "<group>";
