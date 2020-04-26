@@ -12,8 +12,8 @@
 typedef enum BannerPresentationState {
     BannerPresentationStatePresenting,
     BannerPresentationStateHidden,
-    BannerPresentationStateAnimatingIn,
-    BannerPresentationStateAnimatingOut,
+    BannerPresentationStateAnimatingPresentation,
+    BannerPresentationStateAnimatingDismissal,
     BannerPresentationStateTouched
 } BannerPresentationState;
 

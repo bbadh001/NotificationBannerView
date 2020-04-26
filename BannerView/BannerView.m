@@ -14,12 +14,11 @@
 #define kPresentingAnimationTime 0.3
 #define kDefaultDismissalAnimationTime 0.3
 
-#define kPresentingAnimationVelocity 100.0
+#define kPresentingAnimationVelocity 100
 #define kDefaultDismissalAnimationVelocity 25.0
 #define kTouchDismissalAnimationVelocityLimit 100.0
 
 #define kDistFromParentViewToAutoDismiss 36
-
 @interface BannerView ()
 
 @property (nonatomic, weak) UIView* parentView;
@@ -84,22 +83,33 @@
     return self;
 }
 
-#pragma mark Instance Methods
+#pragma mark Public Methods
 
 -(void)present {
-    //only present from hidden state
-//    if (self.presentationState != BannerPresentationStateHidden) {
-//        return;
-//    }
+    if (self.presentationState != BannerPresentationStateHidden) { return; }
+    [self animateToPresentingPositionWithVelocity:kPresentingAnimationVelocity];
+}
+
+-(void)dismiss {
+    if (self.presentationState == BannerPresentationStatePresenting ||
+        self.presentationState == BannerPresentationStateAnimatingPresentation ||
+        self.presentationState == BannerPresentationStateTouched) {
+        [self dismissAnimationWithVelocity:kDefaultDismissalAnimationVelocity];
+    }
+}
+
+#pragma mark Private Methods
+
+-(void)animateToPresentingPositionWithVelocity:(CGFloat)velocity {
+    self.presentationState = BannerPresentationStateAnimatingPresentation;
     
-    self.presentationState = BannerPresentationStateAnimatingIn;
+    CGFloat distanceFromBannerToEnd = self.frame.origin.y+self.bannerHeight;
+    NSTimeInterval animationTime = distanceFromBannerToEnd/velocity;
     
-    NSTimeInterval animationTime = self.bannerHeight/kPresentingAnimationVelocity;
-    
-    NSLog(@"velo: %f", -kPresentingAnimationVelocity);
+    NSLog(@"velo: %f", -velocity);
     NSLog(@"anim: %f", animationTime);
     
-    [UIView animateWithDuration: animationTime delay:0.0 usingSpringWithDamping:0.7 initialSpringVelocity:-kPresentingAnimationVelocity options:UIViewAnimationOptionCurveEaseIn animations: ^{
+    [UIView animateWithDuration: animationTime delay:0.0 usingSpringWithDamping:0.7 initialSpringVelocity:-velocity options:UIViewAnimationOptionCurveEaseIn animations: ^{
             CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
             self.frame = targetPosition;
         }
@@ -109,19 +119,9 @@
     ];
 }
 
--(void)dismiss {
-    if (self.presentationState != BannerPresentationStatePresenting) { return; }
-    [self dismissWithVelocity:kDefaultDismissalAnimationVelocity];
-}
-
--(void)dismissWithVelocity:(CGFloat)velocity {
+-(void)dismissAnimationWithVelocity:(CGFloat)velocity {
     //only allow for programmatic dismiss only in these two states
-    if (self.presentationState != BannerPresentationStatePresenting &&
-        self.presentationState != BannerPresentationStateTouched) {
-        return;
-    }
-    
-    self.presentationState = BannerPresentationStateAnimatingOut;
+    self.presentationState = BannerPresentationStateAnimatingDismissal;
     
     CGFloat distanceFromBannerToEnd = self.frame.origin.y+self.bannerHeight;
     NSTimeInterval animationTime = distanceFromBannerToEnd/velocity;
@@ -141,28 +141,29 @@
 }
 
 #pragma mark Gesture Recognizer Methods
-
+ 
 -(void)handlePan:(UIPanGestureRecognizer*)sender {
     CGPoint delta = [sender translationInView:self.parentView];
+    CGPoint velocity = [sender velocityInView:self];
     
-    if (sender.state == UIGestureRecognizerStateEnded) {
-        [self present];
-    }
-    
-    //banner is close to edge anyways, we should force a dismiss animation
+    //banner is too close edge, we should force a dismiss animation
     if (self.frame.origin.y+self.frame.size.height <= kDistFromParentViewToAutoDismiss) {
-        CGPoint velocity = [sender velocityInView:self];
         //hard limit on velocity, if above set threshold dismiss at the limit
         //otherwise, dismiss at velocity/2
         //if below default, just dismiss at the default velocity
         if (-velocity.y >= kTouchDismissalAnimationVelocityLimit) {
-            [self dismissWithVelocity:kTouchDismissalAnimationVelocityLimit];
+            [self dismissAnimationWithVelocity:kTouchDismissalAnimationVelocityLimit];
         } else if (-velocity.y > kDefaultDismissalAnimationVelocity) {
-            [self dismissWithVelocity:-velocity.y/2];//this needs more, too fast
+            [self dismissAnimationWithVelocity:-velocity.y/2];//this needs work, too fast
         } else {
-            [self dismissWithVelocity:kDefaultDismissalAnimationVelocity];
+            [self dismissAnimationWithVelocity:kDefaultDismissalAnimationVelocity];
         }
     } else {
+        //user was touching then let go, move banner back to presenting position
+        if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
+            [self animateToPresentingPositionWithVelocity: kPresentingAnimationVelocity];
+        }
+        
         //not close to edge yet, so move banner wherever the touch guides us
         CGRect nextPosition = self.frame;
         if (delta.y < 0) {
@@ -175,9 +176,7 @@
                 nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             } else {
-//                NSLog(@"delta y %f", delta.y);
-//                NSLog(@"sqrt delta y %f", sqrt(delta.y));
-//                NSLog(@"self.frame.origin.y %f", self.frame.origin.y);
+                //
                 nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(1/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             }
