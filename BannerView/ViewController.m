@@ -21,7 +21,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    BannerView* banner = [[BannerView alloc] initWithTitle:@"Main title" subTitle:@"Sub title" parentView:self.view];
+    BannerView* banner = [[BannerView alloc] initWithTitle:@"Success!" subTitle:@"Your new changes were saved" parentView:self.view];
     self.bannerView = banner;
     [self.view addSubview:banner];
     [banner present];

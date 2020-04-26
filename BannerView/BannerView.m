@@ -9,16 +9,14 @@
 #import "BannerView.h"
 #import "BannerPresentationState.h"
 
-#include "math.h"
-
 #define kPresentingAnimationTime 0.3
 #define kDefaultDismissalAnimationTime 0.3
 
-#define kPresentingAnimationVelocity 100
+#define kPresentingAnimationVelocity 50.0
 #define kDefaultDismissalAnimationVelocity 25.0
 #define kTouchDismissalAnimationVelocityLimit 100.0
 
-#define kDistFromParentViewToAutoDismiss 36
+#define kDistFromParentViewToAutoDismiss 36.0
 @interface BannerView ()
 
 @property (nonatomic, weak) UIView* parentView;
@@ -41,10 +39,18 @@
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
     UILabel* mainTitleLabel = [UILabel new];
-    mainTitleLabel.text = mainTitle;
-    mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     UILabel* subTitleLabel = [UILabel new];
+    
+    //attribute text would be a good idea here
+    mainTitleLabel.text = mainTitle;
+    mainTitleLabel.textColor = UIColor.whiteColor;
+    mainTitleLabel.font = [UIFont systemFontOfSize:18.0 weight:UIFontWeightBold];
+    mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    
     subTitleLabel.text = subTitle;
+    subTitleLabel.textColor = UIColor.whiteColor;
+    subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
+    subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     
     [self addSubview: mainTitleLabel];
     [self addSubview: subTitleLabel];
@@ -53,6 +59,11 @@
     
     [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
     [self addConstraints:mainTitleLabelConstraints];
+    
+    NSArray* subTitleLabelConstraints = [NSArray arrayWithObjects: [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:mainTitleLabel attribute:NSLayoutAttributeBottom multiplier:1.0 constant:self.subTitleLabelTopPadding], [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:self.subTitleLabelLeftPadding], [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-self.subTitleLabelTopPadding] ,nil];
+    
+    [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
+    [self addConstraints:subTitleLabelConstraints];
 }
 
 -(void)setupGestureRecongizer {
@@ -69,12 +80,12 @@
         self.mainTitleLabelLeftPadding = (CGFloat) 16.0;
         self.subTitleLabelLeftPadding = (CGFloat) 16.0;
         
-        self.bannerHeight = (CGFloat) 60.0;
+        self.bannerHeight = (CGFloat) 100.0;
         self.parentView = parentView;
         self.presentationState = BannerPresentationStateHidden;
 
         self.frame = CGRectMake(0.0, -self.bannerHeight, self.parentView.bounds.size.width, self.bannerHeight);
-        [self setBackgroundColor: UIColor.redColor];
+        [self setBackgroundColor: [UIColor colorWithRed:.10 green:.63 blue:.37 alpha:1.0]];
         
         [self setupGestureRecongizer];
         [self setupLabels:mainTitle subTitle:subTitle];
@@ -86,7 +97,9 @@
 #pragma mark Public Methods
 
 -(void)present {
+    if (self.parentView == nil) { return; }
     if (self.presentationState != BannerPresentationStateHidden) { return; }
+    
     [self animateToPresentingPositionWithVelocity:kPresentingAnimationVelocity];
 }
 
@@ -103,13 +116,13 @@
 -(void)animateToPresentingPositionWithVelocity:(CGFloat)velocity {
     self.presentationState = BannerPresentationStateAnimatingPresentation;
     
-    CGFloat distanceFromBannerToEnd = self.frame.origin.y+self.bannerHeight;
-    NSTimeInterval animationTime = distanceFromBannerToEnd/velocity;
+    CGFloat distanceToPresentingPosition = fabs(self.frame.origin.y);
+    NSTimeInterval animationTime = distanceToPresentingPosition/velocity;
     
     NSLog(@"velo: %f", -velocity);
     NSLog(@"anim: %f", animationTime);
     
-    [UIView animateWithDuration: animationTime delay:0.0 usingSpringWithDamping:0.7 initialSpringVelocity:-velocity options:UIViewAnimationOptionCurveEaseIn animations: ^{
+    [UIView animateWithDuration: animationTime delay:0.0 usingSpringWithDamping:0.7 initialSpringVelocity:-velocity options: UIViewAnimationOptionAllowUserInteraction animations: ^{
             CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
             self.frame = targetPosition;
         }
@@ -120,7 +133,6 @@
 }
 
 -(void)dismissAnimationWithVelocity:(CGFloat)velocity {
-    //only allow for programmatic dismiss only in these two states
     self.presentationState = BannerPresentationStateAnimatingDismissal;
     
     CGFloat distanceFromBannerToEnd = self.frame.origin.y+self.bannerHeight;
@@ -145,6 +157,7 @@
 -(void)handlePan:(UIPanGestureRecognizer*)sender {
     CGPoint delta = [sender translationInView:self.parentView];
     CGPoint velocity = [sender velocityInView:self];
+    NSLog(@"%ld", (long)sender.state);
     
     //banner is too close edge, we should force a dismiss animation
     if (self.frame.origin.y+self.frame.size.height <= kDistFromParentViewToAutoDismiss) {
