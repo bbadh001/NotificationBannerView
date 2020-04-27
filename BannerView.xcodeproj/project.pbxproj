@@ -15,6 +15,10 @@
 		D320AF502453C9BC000BA8B3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D320AF4E2453C9BC000BA8B3 /* LaunchScreen.storyboard */; };
 		D320AF532453C9BC000BA8B3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF522453C9BC000BA8B3 /* main.m */; };
 		D320AF5B2453CA09000BA8B3 /* BannerView.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF5A2453CA09000BA8B3 /* BannerView.m */; };
+		D320AF892456743A000BA8B3 /* BaseBannerView.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF882456743A000BA8B3 /* BaseBannerView.m */; };
+		D320AF8C24567696000BA8B3 /* PanGestureHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF8B24567696000BA8B3 /* PanGestureHandler.m */; };
+		D320AF8F245676C3000BA8B3 /* Animator.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF8E245676C3000BA8B3 /* Animator.m */; };
+		D320AF9424567D02000BA8B3 /* FloatingBannerView.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF9324567D02000BA8B3 /* FloatingBannerView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +37,14 @@
 		D320AF592453CA09000BA8B3 /* BannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerView.h; sourceTree = "<group>"; };
 		D320AF5A2453CA09000BA8B3 /* BannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BannerView.m; sourceTree = "<group>"; };
 		D320AF8424550EB1000BA8B3 /* BannerPresentationState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerPresentationState.h; sourceTree = "<group>"; };
+		D320AF872456743A000BA8B3 /* BaseBannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaseBannerView.h; sourceTree = "<group>"; };
+		D320AF882456743A000BA8B3 /* BaseBannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BaseBannerView.m; sourceTree = "<group>"; };
+		D320AF8A24567696000BA8B3 /* PanGestureHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanGestureHandler.h; sourceTree = "<group>"; };
+		D320AF8B24567696000BA8B3 /* PanGestureHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanGestureHandler.m; sourceTree = "<group>"; };
+		D320AF8D245676C3000BA8B3 /* Animator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Animator.h; sourceTree = "<group>"; };
+		D320AF8E245676C3000BA8B3 /* Animator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Animator.m; sourceTree = "<group>"; };
+		D320AF9224567D02000BA8B3 /* FloatingBannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FloatingBannerView.h; sourceTree = "<group>"; };
+		D320AF9324567D02000BA8B3 /* FloatingBannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FloatingBannerView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,8 +91,32 @@
 				D320AF592453CA09000BA8B3 /* BannerView.h */,
 				D320AF5A2453CA09000BA8B3 /* BannerView.m */,
 				D320AF8424550EB1000BA8B3 /* BannerPresentationState.h */,
+				D320AF9124567999000BA8B3 /* FloatingBannerView */,
+				D320AF90245676CC000BA8B3 /* Base */,
 			);
 			path = BannerView;
+			sourceTree = "<group>";
+		};
+		D320AF90245676CC000BA8B3 /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				D320AF872456743A000BA8B3 /* BaseBannerView.h */,
+				D320AF882456743A000BA8B3 /* BaseBannerView.m */,
+				D320AF8A24567696000BA8B3 /* PanGestureHandler.h */,
+				D320AF8B24567696000BA8B3 /* PanGestureHandler.m */,
+				D320AF8D245676C3000BA8B3 /* Animator.h */,
+				D320AF8E245676C3000BA8B3 /* Animator.m */,
+			);
+			path = Base;
+			sourceTree = "<group>";
+		};
+		D320AF9124567999000BA8B3 /* FloatingBannerView */ = {
+			isa = PBXGroup;
+			children = (
+				D320AF9224567D02000BA8B3 /* FloatingBannerView.h */,
+				D320AF9324567D02000BA8B3 /* FloatingBannerView.m */,
+			);
+			path = FloatingBannerView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -114,6 +150,7 @@
 				TargetAttributes = {
 					D320AF3C2453C9BA000BA8B3 = {
 						CreatedOnToolsVersion = 11.3.1;
+						LastSwiftMigration = 1130;
 					};
 				};
 			};
@@ -153,7 +190,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D320AF8F245676C3000BA8B3 /* Animator.m in Sources */,
+				D320AF8C24567696000BA8B3 /* PanGestureHandler.m in Sources */,
 				D320AF482453C9BA000BA8B3 /* ViewController.m in Sources */,
+				D320AF892456743A000BA8B3 /* BaseBannerView.m in Sources */,
+				D320AF9424567D02000BA8B3 /* FloatingBannerView.m in Sources */,
 				D320AF422453C9BA000BA8B3 /* AppDelegate.m in Sources */,
 				D320AF532453C9BC000BA8B3 /* main.m in Sources */,
 				D320AF5B2453CA09000BA8B3 /* BannerView.m in Sources */,
@@ -297,6 +338,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9JUEZ6UHT3;
 				INFOPLIST_FILE = BannerView/Info.plist;
@@ -306,6 +348,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = brentbadhwar.BannerView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -314,6 +358,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9JUEZ6UHT3;
 				INFOPLIST_FILE = BannerView/Info.plist;
@@ -323,6 +368,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = brentbadhwar.BannerView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
