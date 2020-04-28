@@ -71,9 +71,9 @@
         self.subTitleLabelLeftPadding = (CGFloat) 16.0;
         
         self.bannerHeight = (CGFloat) 100.0;
-        self.presentationState = BannerPresentationStateHidden;
-
-        self.frame = CGRectMake(0.0, -self.bannerHeight, self.parentView.bounds.size.width, self.bannerHeight);
+//        self.presentationState = BannerPresentationStateHidden;
+//
+//        self.frame = CGRectMake(0.0, -self.bannerHeight, self.parentView.bounds.size.width, self.bannerHeight);
         [self setBackgroundColor: [UIColor colorWithRed:.10 green:.63 blue:.37 alpha:1.0]];
         
         [self setupGestureRecongizer];
@@ -87,16 +87,16 @@
 
 -(void)present {
     if (self.superview == nil) { return; }
-    if (self.presentationState != BannerPresentationStateHidden) { return; }
+//    if (self.presentationState != BannerPresentationStateHidden) { return; }
 }
 
 -(void)dismiss {
     if (self.superview == nil) { return; }
-    if (self.presentationState == BannerPresentationStatePresenting ||
-        self.presentationState == BannerPresentationStateAnimatingPresentation ||
-        self.presentationState == BannerPresentationStateTouched) {
-        [self dismissAnimationWithVelocity:kDefaultDismissalAnimationVelocity];
-    }
+//    if (self.presentationState == BannerPresentationStatePresenting ||
+//        self.presentationState == BannerPresentationStateAnimatingPresentation ||
+//        self.presentationState == BannerPresentationStateTouched) {
+//        [self dismissAnimationWithVelocity:kDefaultDismissalAnimationVelocity];
+//    }
 }
 
 //likely a reconfigrable views/constraints function here

@@ -27,6 +27,11 @@
     [banner present];
 }
 
+- (IBAction)presentBtnTapped:(UIButton *)sender {
+    [self.bannerView present];
+}
+
+
 - (IBAction)dismissBtnTapped:(UIButton *)sender {
     [self.bannerView dismiss];
 }

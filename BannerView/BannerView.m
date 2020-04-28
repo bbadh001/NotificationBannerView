@@ -94,21 +94,34 @@
     return self;
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if ([keyPath isEqual: @"superview"]) {
+        self.parentView = self.superview;
+        if (self.parentView != nil) {
+            //parent view changed, update banner
+        }
+    }
+}
+
 #pragma mark Public Methods
 
 -(void)present {
-    if (self.parentView == nil) { return; }
-    if (self.presentationState != BannerPresentationStateHidden) { return; }
-    
+    if (self.superview == nil) { return; }
+    if (self.presentationState == BannerPresentationStatePresenting) { return; }
+    if (self.presentationState == BannerPresentationStateAnimatingPresentation) { return; }
+    if (self.presentationState == BannerPresentationStateTouched) { return; }
+
+    [self.layer removeAllAnimations];
     [self animateToPresentingPositionWithVelocity:kPresentingAnimationVelocity];
 }
 
 -(void)dismiss {
-    if (self.presentationState == BannerPresentationStatePresenting ||
-        self.presentationState == BannerPresentationStateAnimatingPresentation ||
-        self.presentationState == BannerPresentationStateTouched) {
-        [self dismissAnimationWithVelocity:kDefaultDismissalAnimationVelocity];
-    }
+    if (self.superview == nil) { return; }
+    if (self.presentationState == BannerPresentationStateHidden) { return; }
+    
+    [self.layer removeAllAnimations];
+    [self dismissAnimationWithVelocity:kDefaultDismissalAnimationVelocity];
 }
 
 #pragma mark Private Methods
