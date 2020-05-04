@@ -94,23 +94,15 @@
     return self;
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-    if ([keyPath isEqual: @"superview"]) {
-        self.parentView = self.superview;
-        if (self.parentView != nil) {
-            //parent view changed, update banner
-        }
-    }
-}
-
 #pragma mark Public Methods
 
--(void)present {
-    if (self.superview == nil) { return; }
+-(void)present:(UIViewController*)vc {    
     if (self.presentationState == BannerPresentationStatePresenting) { return; }
     if (self.presentationState == BannerPresentationStateAnimatingPresentation) { return; }
     if (self.presentationState == BannerPresentationStateTouched) { return; }
+    
+    [vc.view addSubview:self];
+    NSLog(@"%f %f %f %f", self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
 
     [self.layer removeAllAnimations];
     [self animateToPresentingPositionWithVelocity:kPresentingAnimationVelocity];

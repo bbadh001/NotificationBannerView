@@ -23,12 +23,12 @@
     // Do any additional setup after loading the view.
     BannerView* banner = [[BannerView alloc] initWithTitle:@"Success!" subTitle:@"Your new changes were saved" parentView:self.view];
     self.bannerView = banner;
-    [self.view addSubview:banner];
-    [banner present];
+//    [self.view addSubview:banner];
+    [self.bannerView present:self];
 }
 
 - (IBAction)presentBtnTapped:(UIButton *)sender {
-    [self.bannerView present];
+    [self.bannerView present:self];
 }
 
 
