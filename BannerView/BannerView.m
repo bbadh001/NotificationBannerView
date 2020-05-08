@@ -38,6 +38,8 @@
 #pragma mark Setup and Init Methods
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
+//    self.translatesAutoresizingMaskIntoConstraints = NO;
+    
     UILabel* mainTitleLabel = [UILabel new];
     UILabel* subTitleLabel = [UILabel new];
     
@@ -46,11 +48,17 @@
     mainTitleLabel.textColor = UIColor.whiteColor;
     mainTitleLabel.font = [UIFont systemFontOfSize:18.0 weight:UIFontWeightBold];
     mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    mainTitleLabel.layer.borderColor = UIColor.redColor.CGColor;
+    mainTitleLabel.layer.borderWidth = 2.0;
+    [mainTitleLabel sizeToFit];
     
     subTitleLabel.text = subTitle;
     subTitleLabel.textColor = UIColor.whiteColor;
     subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
     subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    subTitleLabel.layer.borderColor = UIColor.redColor.CGColor;
+    subTitleLabel.layer.borderWidth = 2.0;
+    [subTitleLabel sizeToFit];
     
     [self addSubview: mainTitleLabel];
     [self addSubview: subTitleLabel];
@@ -64,6 +72,10 @@
     
     [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
     [self addConstraints:subTitleLabelConstraints];
+    
+    CGFloat bannerHeight = self.mainTitleLabelTopPadding+mainTitleLabel.frame.size.height+self.subTitleLabelTopPadding+subTitleLabel.frame.size.height+self.subTitleLabelTopPadding+20.0;
+    NSLog(@"Height %f", bannerHeight);
+    self.bannerHeight = bannerHeight;
 }
 
 -(void)setupGestureRecongizer {
@@ -75,12 +87,11 @@
     self = [super init];
     if (self != nil) {
         self.mainTitleLabelTopPadding = (CGFloat) 16.0;
-        self.subTitleLabelTopPadding = (CGFloat) 8.0;
+        self.subTitleLabelTopPadding = (CGFloat) 16.0;
         
         self.mainTitleLabelLeftPadding = (CGFloat) 16.0;
         self.subTitleLabelLeftPadding = (CGFloat) 16.0;
         
-        self.bannerHeight = (CGFloat) 100.0;
         self.parentView = parentView;
         self.presentationState = BannerPresentationStateHidden;
 
@@ -96,12 +107,13 @@
 
 #pragma mark Public Methods
 
--(void)present:(UIViewController*)vc {    
+-(void)present:(UIViewController*)vc {
     if (self.presentationState == BannerPresentationStatePresenting) { return; }
     if (self.presentationState == BannerPresentationStateAnimatingPresentation) { return; }
     if (self.presentationState == BannerPresentationStateTouched) { return; }
     
     [vc.view addSubview:self];
+    self.frame = CGRectMake(0.0, -self.bannerHeight, vc.view.frame.size.width, self.bannerHeight);
     NSLog(@"%f %f %f %f", self.frame.origin.x,self.frame.origin.y,self.frame.size.width,self.frame.size.height);
 
     [self.layer removeAllAnimations];
@@ -195,7 +207,7 @@
                 self.frame = nextPosition;
             } else {
                 //
-                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(1/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.5/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             }
         }
