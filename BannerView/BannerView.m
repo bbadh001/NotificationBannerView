@@ -12,7 +12,7 @@
 #define kPresentingAnimationTime 0.3
 #define kDefaultDismissalAnimationTime 0.3
 
-#define kPresentingAnimationVelocity 330.0
+#define kDefaultAnimationVelocity 330.0
 #define kDefaultDismissalAnimationVelocity 25.0
 #define kTouchDismissalAnimationVelocityLimit 100.0
 
@@ -133,21 +133,21 @@
 #pragma mark Public Methods
 
 -(void)presentOnViewController:(UIViewController*)vc {
-    //make sure the vc have a superview
+    // make sure the vc have a superview
     if (!vc) { return; }
     
-    //make sure we are in the hidden state
+    // make sure we are in the hidden state
     if (self.presentationState != BannerPresentationStateHidden) { return; }
     
-    //add superview and init position
+    // add superview and init position
     [vc.view addSubview:self];
     self.frame = CGRectMake(0.0, -self.bannerHeight, vc.view.frame.size.width, self.bannerHeight);
 
-    //present the banner
+    // present the banner
     [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingPresentation;
     [self animateToPosition: CGRectMake(0.0, 0.0, vc.view.frame.size.width, self.bannerHeight)
-               withVelocity: kPresentingAnimationVelocity
+               withVelocity: kDefaultAnimationVelocity
             initialVelocity: 0.0
                onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStatePresenting;
@@ -156,14 +156,26 @@
 }
 
 -(void)dismiss {
-    if (self.presentationState == BannerPresentationStateHidden) { return; }
+    // make sure we are a subview of something
+    if (self.superview == nil) { return; }
+    // if we are hidden or in the middle of the dismissal, we have nothing to do here
+    if (self.presentationState == BannerPresentationStateHidden ||
+        self.presentationState == BannerPresentationStateAnimatingDismissal) { return; }
     
     [self.layer removeAllAnimations];
-    [self dismissAnimationWithVelocity:kDefaultDismissalAnimationVelocity];
+    self.presentationState = BannerPresentationStateAnimatingDismissal;
+    [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
+               withVelocity: kDefaultAnimationVelocity
+            initialVelocity: 0.0
+               onCompletion: ^(BOOL finished) {
+                self.presentationState = BannerPresentationStateHidden;
+            }
+     ];
 }
 
 #pragma mark Private Methods
 
+/// General animation method
 -(void)animateToPosition:(CGRect)targetPosition
             withVelocity:(CGFloat)velocity
          initialVelocity:(CGFloat)initialVelocity
@@ -171,6 +183,7 @@
     CGRect currentPosition = self.frame;
     CGFloat distanceToTargetPosition = fabs(currentPosition.origin.y-targetPosition.origin.y);
     NSTimeInterval animationTime = distanceToTargetPosition/fabs(velocity);
+
     NSLog(@"animate time %f", animationTime);
     
     [UIView animateWithDuration: animationTime
@@ -248,7 +261,7 @@
     } else {
         //user was touching then let go, move banner back to presenting position
         if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
-            [self animateToPresentingPositionWithVelocity: kPresentingAnimationVelocity];
+            [self animateToPresentingPositionWithVelocity: kDefaultAnimationVelocity];
         }
         
         //not close to edge yet, so move banner wherever the touch guides us
