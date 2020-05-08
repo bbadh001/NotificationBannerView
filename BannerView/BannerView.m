@@ -9,14 +9,9 @@
 #import "BannerView.h"
 #import "BannerPresentationState.h"
 
-#define kPresentingAnimationTime 0.3
-#define kDefaultDismissalAnimationTime 0.3
+#define kDefaultAnimationVelocity 300.0
+#define kDistFromParentViewToAutoDismiss 40.0
 
-#define kDefaultAnimationVelocity 330.0
-#define kDefaultDismissalAnimationVelocity 25.0
-#define kTouchDismissalAnimationVelocityLimit 100.0
-
-#define kDistFromParentViewToAutoDismiss 36.0
 @interface BannerView ()
 
 @property (nonatomic, weak) UIView* parentView;
@@ -78,7 +73,7 @@
 //    [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
 //    [self addConstraints:subTitleLabelConstraints];
 //
-    CGFloat bannerHeight = self.mainTitleLabelTopPadding+mainTitleLabel.frame.size.height+self.subTitleLabelTopPadding+subTitleLabel.frame.size.height+self.subTitleLabelTopPadding+50.0;
+    CGFloat bannerHeight = self.mainTitleLabelTopPadding+mainTitleLabel.frame.size.height+self.subTitleLabelTopPadding+subTitleLabel.frame.size.height+self.subTitleLabelTopPadding+20.0;
     NSLog(@"Height %f", bannerHeight);
     self.bannerHeight = bannerHeight;
     
@@ -108,7 +103,7 @@
     [self addGestureRecognizer:panGesture];
 }
 
-- (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView {
+- (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
     self = [super init];
     if (self != nil) {
         self.mainTitleLabelTopPadding = (CGFloat) 16.0;
@@ -117,11 +112,7 @@
         self.mainTitleLabelLeftPadding = (CGFloat) 16.0;
         self.subTitleLabelLeftPadding = (CGFloat) 16.0;
         
-        self.parentView = parentView;
         self.presentationState = BannerPresentationStateHidden;
-
-        self.frame = CGRectMake(0.0, -self.bannerHeight, self.parentView.bounds.size.width, self.bannerHeight);
-        [self setBackgroundColor: [UIColor colorWithRed:.10 green:.63 blue:.37 alpha:1.0]];
         
         [self setupGestureRecongizer];
         [self setupLabels:mainTitle subTitle:subTitle];
@@ -243,46 +234,54 @@
  
 -(void)handlePan:(UIPanGestureRecognizer*)sender {
     CGPoint delta = [sender translationInView:self.parentView];
-    CGPoint velocity = [sender velocityInView:self];
-    NSLog(@"%ld", (long)sender.state);
-    
+//    CGPoint velocity = [sender velocityInView:self];
+
     //banner is too close edge, we should force a dismiss animation
     if (self.frame.origin.y+self.frame.size.height <= kDistFromParentViewToAutoDismiss) {
-        //hard limit on velocity, if above set threshold dismiss at the limit
-        //otherwise, dismiss at velocity/2
-        //if below default, just dismiss at the default velocity
-        if (-velocity.y >= kTouchDismissalAnimationVelocityLimit) {
-            [self dismissAnimationWithVelocity:kTouchDismissalAnimationVelocityLimit];
-        } else if (-velocity.y > kDefaultDismissalAnimationVelocity) {
-            [self dismissAnimationWithVelocity:-velocity.y/2];//this needs work, too fast
-        } else {
-            [self dismissAnimationWithVelocity:kDefaultDismissalAnimationVelocity];
+        if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
+            self.presentationState != BannerPresentationStateHidden) {
+            self.presentationState = BannerPresentationStateAnimatingDismissal;
+            [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
+                       withVelocity: kDefaultAnimationVelocity
+                    initialVelocity: 0.0
+                       onCompletion: ^(BOOL finished) {
+                        self.presentationState = BannerPresentationStateHidden;
+                    }
+             ];
         }
     } else {
         //user was touching then let go, move banner back to presenting position
         if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
-            [self animateToPresentingPositionWithVelocity: kDefaultAnimationVelocity];
-        }
-        
-        //not close to edge yet, so move banner wherever the touch guides us
-        CGRect nextPosition = self.frame;
-        if (delta.y < 0) {
-            //user is guiding the banner up
-            nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
-            self.frame = nextPosition;
+            self.presentationState = BannerPresentationStateAnimatingPresentation;
+            [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
+                       withVelocity: kDefaultAnimationVelocity
+                    initialVelocity: 0.0
+                       onCompletion: ^(BOOL finished) {
+                        self.presentationState = BannerPresentationStatePresenting;
+                    }
+             ];
         } else {
-            //user is guiding the banner down
-            if (self.frame.origin.y <= 0) {
+            //not close to edge yet, so move banner wherever the touch guides us
+            CGRect nextPosition = self.frame;
+            if (delta.y < 0) {
+                //user is guiding the banner up
                 nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             } else {
-                //
-                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.5/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
-                self.frame = nextPosition;
+                //user is guiding the banner down
+                if (self.frame.origin.y <= 0) {
+                    nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
+                    self.frame = nextPosition;
+                } else {
+                    //
+                    nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.50/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
+                    self.frame = nextPosition;
+                }
             }
+            
+            self.frame = nextPosition;
+            
         }
-        
-        self.frame = nextPosition;
     }
     
     [sender setTranslation:CGPointMake(0, 0) inView:self];

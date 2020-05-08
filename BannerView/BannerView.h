@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface BannerView : UIView
 
-- (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle parentView:(UIView *)parentView;
+- (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle;
 
 -(void)presentOnViewController:(UIViewController*)vc;
 -(void)dismiss;
