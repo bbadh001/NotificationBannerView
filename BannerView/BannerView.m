@@ -9,8 +9,10 @@
 #import "BannerView.h"
 #import "BannerPresentationState.h"
 
-#define kDefaultAnimationVelocity 300.0
-#define kDistFromParentViewToAutoDismiss 40.0
+#define kDefaultAnimationVelocity 200.0
+#define kAnimationVelocityMax 300.0
+
+#define kDistFromParentViewToAutoDismiss 50.0
 
 @interface BannerView ()
 
@@ -232,26 +234,41 @@
 
 #pragma mark Gesture Recognizer Methods
  
+///
 -(void)handlePan:(UIPanGestureRecognizer*)sender {
     CGPoint delta = [sender translationInView:self.parentView];
-//    CGPoint velocity = [sender velocityInView:self];
-
-    //banner is too close edge, we should force a dismiss animation
-    if (self.frame.origin.y+self.frame.size.height <= kDistFromParentViewToAutoDismiss) {
-        if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
-            self.presentationState != BannerPresentationStateHidden) {
-            self.presentationState = BannerPresentationStateAnimatingDismissal;
-            [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
-                       withVelocity: kDefaultAnimationVelocity
-                    initialVelocity: 0.0
-                       onCompletion: ^(BOOL finished) {
-                        self.presentationState = BannerPresentationStateHidden;
-                    }
-             ];
-        }
-    } else {
-        //user was touching then let go, move banner back to presenting position
-        if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
+    CGPoint velocity = [sender velocityInView:self];
+    
+    NSLog(@"Velocity: %f", velocity.y);
+    
+    //user has stopped touching the banner
+    if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
+        // check to see if banner is too close edge, we should force a dismiss animation
+        // otherwise, just animate back to presenting position
+        if (self.frame.origin.y+self.frame.size.height <= kDistFromParentViewToAutoDismiss) {
+            if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
+                self.presentationState != BannerPresentationStateHidden) {
+                self.presentationState = BannerPresentationStateAnimatingDismissal;
+                //
+                CGFloat currentVelocity = fabs(velocity.y);
+                CGFloat velocityToDismiss = velocity.y;
+                if (currentVelocity >= kAnimationVelocityMax) {
+                    velocityToDismiss = kAnimationVelocityMax;
+                } else if (currentVelocity <= kDefaultAnimationVelocity) {
+                    velocityToDismiss = kDefaultAnimationVelocity;
+                } else {
+                    velocityToDismiss = currentVelocity;
+                }
+                
+                [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
+                           withVelocity: velocityToDismiss
+                        initialVelocity: 0.0
+                           onCompletion: ^(BOOL finished) {
+                            self.presentationState = BannerPresentationStateHidden;
+                        }
+                 ];
+            }
+        } else {
             self.presentationState = BannerPresentationStateAnimatingPresentation;
             [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
                        withVelocity: kDefaultAnimationVelocity
@@ -260,32 +277,32 @@
                         self.presentationState = BannerPresentationStatePresenting;
                     }
              ];
+        }
+    } else {
+        //not close to edge yet, so move banner wherever the touch guides us
+        CGRect nextPosition = self.frame;
+        if (delta.y < 0) {
+            //user is guiding the banner up
+            nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
+            self.frame = nextPosition;
         } else {
-            //not close to edge yet, so move banner wherever the touch guides us
-            CGRect nextPosition = self.frame;
-            if (delta.y < 0) {
-                //user is guiding the banner up
+            //user is guiding the banner down
+            //if past presenting postion, move normally
+            //otherwise give a inverse movement
+            if (self.frame.origin.y <= 0) {
                 nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             } else {
-                //user is guiding the banner down
-                if (self.frame.origin.y <= 0) {
-                    nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
-                    self.frame = nextPosition;
-                } else {
-                    //
-                    nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.50/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
-                    self.frame = nextPosition;
-                }
+                //inverse movement
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(1.0/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
+                self.frame = nextPosition;
             }
-            
-            self.frame = nextPosition;
-            
         }
+        
+        self.frame = nextPosition;
     }
-    
+
     [sender setTranslation:CGPointMake(0, 0) inView:self];
 }
-
 
 @end
