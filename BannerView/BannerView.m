@@ -122,7 +122,7 @@
         
         self.presentationState = BannerPresentationStateHidden;
         
-        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(didRotate) name:UIDeviceOrientationDidChangeNotification object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(handleRotation) name:UIDeviceOrientationDidChangeNotification object:nil];
         
         [self setupGestureRecongizer];
         [self setupLabels:mainTitle subTitle:subTitle];
@@ -194,7 +194,7 @@
     CGFloat distanceToTargetPosition = fabs(currentPosition.origin.y-targetPosition.origin.y);
     NSTimeInterval animationTime = distanceToTargetPosition/fabs(velocity);
 
-    NSLog(@"animate time %f", animationTime);
+//    NSLog(@"animate time %f", animationTime);
     
     [UIView animateWithDuration: animationTime
                           delay: 0.0
@@ -214,9 +214,9 @@
  
 ///The magic function
 -(void)handlePan:(UIPanGestureRecognizer*)sender {
-    CGPoint delta = [sender translationInView:self.parentView];
+    CGPoint delta = [sender translationInView:self.superview];
     CGPoint velocity = [sender velocityInView:self];
-    NSLog(@"Velocity: %f", velocity.y);
+//    NSLog(@"Velocity: %f", velocity.y);
     
     //no reason to be here anyways
     if (self.presentationState == BannerPresentationStateHidden) {
@@ -237,19 +237,11 @@
             if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
                 self.presentationState != BannerPresentationStateHidden) {
                 self.presentationState = BannerPresentationStateAnimatingDismissal;
-                //TODO: make this a function
-                CGFloat currentVelocity = fabs(velocity.y);
-                CGFloat velocityToDismiss = velocity.y;
-                if (currentVelocity >= kAnimationVelocityMax) {
-                    velocityToDismiss = kAnimationVelocityMax;
-                } else if (currentVelocity <= kAnimationVelocityMin) {
-                    velocityToDismiss = kAnimationVelocityMin;
-                } else {
-                    velocityToDismiss = currentVelocity;
-                }
+                
+                CGFloat dismissVelocity = [self normalizeVelocity:velocity.y];
                 
                 [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
-                           withVelocity: velocityToDismiss
+                           withVelocity: dismissVelocity
                         initialVelocity: 0.0
                           springDamping: 1.0
                            onCompletion: ^(BOOL finished) {
@@ -285,7 +277,7 @@
                 self.frame = nextPosition;
             } else {
                 //inverse movement
-                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.50/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.5/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             }
         }
@@ -296,7 +288,22 @@
     [sender setTranslation:CGPointMake(0, 0) inView:self];
 }
 
--(void)didRotate {
+//used to normalize a velocity value to avoid extreme values, to avoid extreme animation times
+-(CGFloat)normalizeVelocity:(CGFloat)velocity {
+    CGFloat currentVelocity = fabs(velocity);
+    CGFloat normalizedVelocity = currentVelocity;
+    if (currentVelocity >= kAnimationVelocityMax) {
+        normalizedVelocity = kAnimationVelocityMax;
+    } else if (currentVelocity <= kAnimationVelocityMin) {
+        normalizedVelocity = kAnimationVelocityMin;
+    } else {
+        normalizedVelocity = currentVelocity;
+    }
+    return normalizedVelocity;
+}
+
+//handles
+-(void)handleRotation {
     if (!self.superview) { return; }
     self.frame = CGRectMake(self.frame.origin.x,
                             self.frame.origin.y,
