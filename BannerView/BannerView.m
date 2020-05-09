@@ -9,13 +9,17 @@
 #import "BannerView.h"
 #import "BannerPresentationState.h"
 
-#define kAnimationVelocityDefault 200.0
+#define kAnimationVelocityDefault 300.0
 #define kDismissalVelocityAnimationDefault 150.0
 
 #define kAnimationVelocityMax 200.0
 #define kAnimationVelocityMin 50.0
 
 #define kDistFromParentViewToAutoDismiss 50.0
+
+//TODOS:
+//remove spring dampening on dismissal off screen
+//if banner is completely off screen, even if user hasnt let go yet, dismiss
 
 @interface BannerView ()
 
@@ -30,6 +34,8 @@
 @property (nonatomic) CGFloat subTitleLabelLeftPadding;
 
 @property (nonatomic) CGFloat bannerHeight;
+
+@property (nonatomic) UIPanGestureRecognizer* panGesture;
 
 @end
 
@@ -106,6 +112,7 @@
 -(void)setupGestureRecongizer {
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     [self addGestureRecognizer:panGesture];
+    self.panGesture = panGesture;
 }
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
@@ -136,9 +143,12 @@
     if (self.presentationState != BannerPresentationStateHidden &&
         self.presentationState != BannerPresentationStateAnimatingDismissal) { return; }
     NSLog(@"%f",self.bannerHeight);
+    
     // add superview and init position
     [vc.view addSubview:self];
     self.frame = CGRectMake(0.0, -self.bannerHeight, vc.view.frame.size.width, self.bannerHeight);
+    
+    [self.panGesture setEnabled:YES];
 
     // present the banner
     [self.layer removeAllAnimations];
@@ -146,6 +156,7 @@
     [self animateToPosition: CGRectMake(0.0, 0.0, vc.view.frame.size.width, self.bannerHeight)
                withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
+            springDamping: 0.7
                onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStatePresenting;
             }
@@ -159,12 +170,15 @@
     if (self.presentationState == BannerPresentationStateHidden ||
         self.presentationState == BannerPresentationStateAnimatingDismissal) { return; }
     
+    [self.panGesture setEnabled:NO];
+    
     [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingDismissal;
     [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
-               withVelocity: kAnimationVelocityDefault
+            withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
-               onCompletion: ^(BOOL finished) {
+            springDamping: 1.0
+            onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStateHidden;
             }
      ];
@@ -176,6 +190,7 @@
 -(void)animateToPosition:(CGRect)targetPosition
             withVelocity:(CGFloat)velocity
          initialVelocity:(CGFloat)initialVelocity
+           springDamping:(CGFloat)springDampingCoef
             onCompletion:(void (^)(BOOL finished))completionBlock {
     CGRect currentPosition = self.frame;
     CGFloat distanceToTargetPosition = fabs(currentPosition.origin.y-targetPosition.origin.y);
@@ -185,7 +200,7 @@
     
     [UIView animateWithDuration: animationTime
                           delay: 0.0
-         usingSpringWithDamping: 0.7
+         usingSpringWithDamping: springDampingCoef
           initialSpringVelocity: initialVelocity
                         options: UIViewAnimationOptionAllowUserInteraction
         animations: ^{
@@ -197,53 +212,24 @@
     ];
 }
 
--(void)animateToPresentingPositionWithVelocity:(CGFloat)velocity {
-    self.presentationState = BannerPresentationStateAnimatingPresentation;
-    
-    CGFloat distanceToPresentingPosition = fabs(self.frame.origin.y);
-    NSTimeInterval animationTime = distanceToPresentingPosition/velocity;
-    
-    NSLog(@"velo: %f", -velocity);
-    NSLog(@"anim: %f", animationTime);
-    
-    [UIView animateWithDuration: animationTime delay:0.0 usingSpringWithDamping:0.7 initialSpringVelocity:0.0 options: UIViewAnimationOptionAllowUserInteraction animations: ^{
-            CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
-            self.frame = targetPosition;
-        }
-        completion: ^(BOOL finished) {
-            self.presentationState = BannerPresentationStatePresenting;
-        }
-    ];
-}
-
--(void)dismissAnimationWithVelocity:(CGFloat)velocity {
-    self.presentationState = BannerPresentationStateAnimatingDismissal;
-    
-    CGFloat distanceFromBannerToEnd = self.frame.origin.y+self.bannerHeight;
-    NSTimeInterval animationTime = distanceFromBannerToEnd/velocity;
-    
-    NSLog(@"dist to end: %f", distanceFromBannerToEnd);
-    NSLog(@"velo: %f", velocity);
-    NSLog(@"anim: %f", animationTime);
-    
-    [UIView animateWithDuration: animationTime delay: 0.0 usingSpringWithDamping:1.0 initialSpringVelocity:velocity options:UIViewAnimationOptionBeginFromCurrentState animations: ^{
-            CGRect targetPosition = CGRectMake(0.0, -self.bannerHeight, self.bounds.size.width, self.bannerHeight);
-            self.frame = targetPosition;
-        }
-        completion: ^(BOOL finished) {
-            self.presentationState = BannerPresentationStateHidden;
-        }
-    ];
-}
-
 #pragma mark Gesture Recognizer Methods
  
-///
+///The magic function
 -(void)handlePan:(UIPanGestureRecognizer*)sender {
     CGPoint delta = [sender translationInView:self.parentView];
     CGPoint velocity = [sender velocityInView:self];
-    
     NSLog(@"Velocity: %f", velocity.y);
+    
+    //no reason to be here anyways
+    if (self.presentationState == BannerPresentationStateHidden) {
+        return;
+    }
+    
+    //if we are hidden, force dismiss
+    if (!CGRectIntersectsRect(self.frame, self.superview.frame)) {
+        [self dismiss];
+        return;
+    }
     
     //user has stopped touching the banner
     if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
@@ -267,6 +253,7 @@
                 [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
                            withVelocity: velocityToDismiss
                         initialVelocity: 0.0
+                          springDamping: 1.0
                            onCompletion: ^(BOOL finished) {
                             self.presentationState = BannerPresentationStateHidden;
                         }
@@ -278,6 +265,7 @@
             [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
                        withVelocity: kAnimationVelocityMin
                     initialVelocity: 0.0
+                      springDamping: 0.7
                        onCompletion: ^(BOOL finished) {
                         self.presentationState = BannerPresentationStatePresenting;
                     }
