@@ -9,8 +9,11 @@
 #import "BannerView.h"
 #import "BannerPresentationState.h"
 
-#define kDefaultAnimationVelocity 200.0
-#define kAnimationVelocityMax 250.0
+#define kAnimationVelocityDefault 200.0
+#define kDismissalVelocityAnimationDefault 150.0
+
+#define kAnimationVelocityMax 200.0
+#define kAnimationVelocityMin 50.0
 
 #define kDistFromParentViewToAutoDismiss 50.0
 
@@ -103,9 +106,6 @@
 -(void)setupGestureRecongizer {
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     [self addGestureRecognizer:panGesture];
-    UISwipeGestureRecognizer *swipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipe:)];
-    swipeGesture.direction = UISwipeGestureRecognizerDirectionUp;
-    [self addGestureRecognizer:swipeGesture];
 }
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
@@ -133,7 +133,8 @@
     if (!vc) { return; }
     
     // make sure we are in the hidden state
-    if (self.presentationState != BannerPresentationStateHidden) { return; }
+    if (self.presentationState != BannerPresentationStateHidden &&
+        self.presentationState != BannerPresentationStateAnimatingDismissal) { return; }
     NSLog(@"%f",self.bannerHeight);
     // add superview and init position
     [vc.view addSubview:self];
@@ -143,7 +144,7 @@
     [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingPresentation;
     [self animateToPosition: CGRectMake(0.0, 0.0, vc.view.frame.size.width, self.bannerHeight)
-               withVelocity: kDefaultAnimationVelocity
+               withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
                onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStatePresenting;
@@ -161,7 +162,7 @@
     [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingDismissal;
     [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
-               withVelocity: kDefaultAnimationVelocity
+               withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
                onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStateHidden;
@@ -248,17 +249,17 @@
     if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
         // check to see if banner is too close edge, we should force a dismiss animation
         // otherwise, just animate back to presenting position
-        if (self.frame.origin.y+self.frame.size.height <= self.bannerHeight*.7) {
+        if (self.frame.origin.y+self.frame.size.height <= self.bannerHeight*0.8) {
             if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
                 self.presentationState != BannerPresentationStateHidden) {
                 self.presentationState = BannerPresentationStateAnimatingDismissal;
-                //
+                //TODO: make this a function
                 CGFloat currentVelocity = fabs(velocity.y);
                 CGFloat velocityToDismiss = velocity.y;
                 if (currentVelocity >= kAnimationVelocityMax) {
                     velocityToDismiss = kAnimationVelocityMax;
-                } else if (currentVelocity <= kDefaultAnimationVelocity) {
-                    velocityToDismiss = kDefaultAnimationVelocity;
+                } else if (currentVelocity <= kAnimationVelocityMin) {
+                    velocityToDismiss = kAnimationVelocityMin;
                 } else {
                     velocityToDismiss = currentVelocity;
                 }
@@ -272,9 +273,10 @@
                  ];
             }
         } else {
+            //animate back to presentation state
             self.presentationState = BannerPresentationStateAnimatingPresentation;
             [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
-                       withVelocity: kDefaultAnimationVelocity
+                       withVelocity: kAnimationVelocityMin
                     initialVelocity: 0.0
                        onCompletion: ^(BOOL finished) {
                         self.presentationState = BannerPresentationStatePresenting;
@@ -297,7 +299,7 @@
                 self.frame = nextPosition;
             } else {
                 //inverse movement
-                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(1.0/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.50/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
                 self.frame = nextPosition;
             }
         }
@@ -306,11 +308,6 @@
     }
 
     [sender setTranslation:CGPointMake(0, 0) inView:self];
-}
-
--(void)handleSwipe:(UISwipeGestureRecognizer*)sender {
-    
-    [self dismiss];
 }
 
 @end
