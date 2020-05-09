@@ -10,11 +10,8 @@
 #import "BannerPresentationState.h"
 
 #define kDefaultAnimationVelocity 300.0
-#define kDistFromParentViewToAutoDismiss 40.0
 
 @interface BannerView ()
-
-@property (nonatomic, weak) UIView* parentView;
 
 @property (nonatomic) BannerPresentationState presentationState;
 
@@ -24,7 +21,7 @@
 @property (nonatomic) CGFloat mainTitleLabelLeftPadding;
 @property (nonatomic) CGFloat subTitleLabelLeftPadding;
 
-@property (nonatomic) CGFloat bannerHeight;
+@property (nonatomic) CGFloat bannerHeight; //might be able to remove if we can set height in setup
 
 @end
 
@@ -33,8 +30,6 @@
 #pragma mark Setup and Init Methods
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
-//    self.translatesAutoresizingMaskIntoConstraints = NO;
-    
     UILabel* mainTitleLabel = [UILabel new];
     UILabel* subTitleLabel = [UILabel new];
     
@@ -43,17 +38,13 @@
     mainTitleLabel.textColor = UIColor.whiteColor;
     mainTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightBold];
     mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-//    mainTitleLabel.layer.borderColor = UIColor.redColor.CGColor;
-//    mainTitleLabel.layer.borderWidth = 2.0;
     [mainTitleLabel sizeToFit];
     
     subTitleLabel.text = subTitle;
     subTitleLabel.textColor = UIColor.whiteColor;
     subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
     subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [subTitleLabel setNumberOfLines:5];
-//    subTitleLabel.layer.borderColor = UIColor.redColor.CGColor;
-//    subTitleLabel.layer.borderWidth = 2.0;
+    [subTitleLabel setNumberOfLines:3];
     [subTitleLabel sizeToFit];
     
 //    [self addSubview: mainTitleLabel];
@@ -98,9 +89,10 @@
     [self addConstraints:stackViewConstraints];
 }
 
--(void)setupGestureRecongizer {
-    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    [self addGestureRecognizer:panGesture];
+-(void)setupGestureRecongizers {
+    UISwipeGestureRecognizer* swipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipe:)];
+    swipeGesture.direction = UISwipeGestureRecognizerDirectionUp;
+    [self addGestureRecognizer:swipeGesture];
 }
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
@@ -114,7 +106,7 @@
         
         self.presentationState = BannerPresentationStateHidden;
         
-        [self setupGestureRecongizer];
+        [self setupGestureRecongizers];
         [self setupLabels:mainTitle subTitle:subTitle];
     }
     
@@ -135,7 +127,6 @@
     self.frame = CGRectMake(0.0, -self.bannerHeight, vc.view.frame.size.width, self.bannerHeight);
 
     // present the banner
-    [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingPresentation;
     [self animateToPosition: CGRectMake(0.0, 0.0, vc.view.frame.size.width, self.bannerHeight)
                withVelocity: kDefaultAnimationVelocity
@@ -149,11 +140,11 @@
 -(void)dismiss {
     // make sure we are a subview of something
     if (self.superview == nil) { return; }
+    
     // if we are hidden or in the middle of the dismissal, we have nothing to do here
     if (self.presentationState == BannerPresentationStateHidden ||
         self.presentationState == BannerPresentationStateAnimatingDismissal) { return; }
     
-    [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingDismissal;
     [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
                withVelocity: kDefaultAnimationVelocity
@@ -171,11 +162,12 @@
             withVelocity:(CGFloat)velocity
          initialVelocity:(CGFloat)initialVelocity
             onCompletion:(void (^)(BOOL finished))completionBlock {
+    [self.layer removeAllAnimations];
+
     CGRect currentPosition = self.frame;
     CGFloat distanceToTargetPosition = fabs(currentPosition.origin.y-targetPosition.origin.y);
     NSTimeInterval animationTime = distanceToTargetPosition/fabs(velocity);
-
-    NSLog(@"animate time %f", animationTime);
+    
     
     [UIView animateWithDuration: animationTime
                           delay: 0.0
@@ -191,101 +183,10 @@
     ];
 }
 
--(void)animateToPresentingPositionWithVelocity:(CGFloat)velocity {
-    self.presentationState = BannerPresentationStateAnimatingPresentation;
-    
-    CGFloat distanceToPresentingPosition = fabs(self.frame.origin.y);
-    NSTimeInterval animationTime = distanceToPresentingPosition/velocity;
-    
-    NSLog(@"velo: %f", -velocity);
-    NSLog(@"anim: %f", animationTime);
-    
-    [UIView animateWithDuration: animationTime delay:0.0 usingSpringWithDamping:0.7 initialSpringVelocity:0.0 options: UIViewAnimationOptionAllowUserInteraction animations: ^{
-            CGRect targetPosition = CGRectMake(0.0, 0.0, self.bounds.size.width, self.bannerHeight);
-            self.frame = targetPosition;
-        }
-        completion: ^(BOOL finished) {
-            self.presentationState = BannerPresentationStatePresenting;
-        }
-    ];
-}
-
--(void)dismissAnimationWithVelocity:(CGFloat)velocity {
-    self.presentationState = BannerPresentationStateAnimatingDismissal;
-    
-    CGFloat distanceFromBannerToEnd = self.frame.origin.y+self.bannerHeight;
-    NSTimeInterval animationTime = distanceFromBannerToEnd/velocity;
-    
-    NSLog(@"dist to end: %f", distanceFromBannerToEnd);
-    NSLog(@"velo: %f", velocity);
-    NSLog(@"anim: %f", animationTime);
-    
-    [UIView animateWithDuration: animationTime delay: 0.0 usingSpringWithDamping:1.0 initialSpringVelocity:velocity options:UIViewAnimationOptionBeginFromCurrentState animations: ^{
-            CGRect targetPosition = CGRectMake(0.0, -self.bannerHeight, self.bounds.size.width, self.bannerHeight);
-            self.frame = targetPosition;
-        }
-        completion: ^(BOOL finished) {
-            self.presentationState = BannerPresentationStateHidden;
-        }
-    ];
-}
-
 #pragma mark Gesture Recognizer Methods
- 
--(void)handlePan:(UIPanGestureRecognizer*)sender {
-    CGPoint delta = [sender translationInView:self.parentView];
-//    CGPoint velocity = [sender velocityInView:self];
 
-    //banner is too close edge, we should force a dismiss animation
-    if (self.frame.origin.y+self.frame.size.height <= kDistFromParentViewToAutoDismiss) {
-        if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
-            self.presentationState != BannerPresentationStateHidden) {
-            self.presentationState = BannerPresentationStateAnimatingDismissal;
-            [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
-                       withVelocity: kDefaultAnimationVelocity
-                    initialVelocity: 0.0
-                       onCompletion: ^(BOOL finished) {
-                        self.presentationState = BannerPresentationStateHidden;
-                    }
-             ];
-        }
-    } else {
-        //user was touching then let go, move banner back to presenting position
-        if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
-            self.presentationState = BannerPresentationStateAnimatingPresentation;
-            [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
-                       withVelocity: kDefaultAnimationVelocity
-                    initialVelocity: 0.0
-                       onCompletion: ^(BOOL finished) {
-                        self.presentationState = BannerPresentationStatePresenting;
-                    }
-             ];
-        } else {
-            //not close to edge yet, so move banner wherever the touch guides us
-            CGRect nextPosition = self.frame;
-            if (delta.y < 0) {
-                //user is guiding the banner up
-                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
-                self.frame = nextPosition;
-            } else {
-                //user is guiding the banner down
-                if (self.frame.origin.y <= 0) {
-                    nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
-                    self.frame = nextPosition;
-                } else {
-                    //
-                    nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.50/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
-                    self.frame = nextPosition;
-                }
-            }
-            
-            self.frame = nextPosition;
-            
-        }
-    }
-    
-    [sender setTranslation:CGPointMake(0, 0) inView:self];
+-(void)handleSwipe:(UIPanGestureRecognizer*)sender {
+    [self dismiss];
 }
-
 
 @end

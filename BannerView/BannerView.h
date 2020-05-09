@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "BannerPresentationState.h"
+//#import "BannerViewStyleSuccess.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,8 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle;
 
--(void)presentOnViewController:(UIViewController*)vc;
--(void)dismiss;
+- (void)presentOnViewController:(UIViewController*)vc;
+- (void)dismiss;
 
 @end
 

@@ -45,6 +45,8 @@
 		D320AF8E245676C3000BA8B3 /* Animator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Animator.m; sourceTree = "<group>"; };
 		D320AF9224567D02000BA8B3 /* FloatingBannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FloatingBannerView.h; sourceTree = "<group>"; };
 		D320AF9324567D02000BA8B3 /* FloatingBannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FloatingBannerView.m; sourceTree = "<group>"; };
+		D3C2EBAA246638E50030F6AB /* BannerViewStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewStyle.h; sourceTree = "<group>"; };
+		D3C2EBAB24663AFF0030F6AB /* BannerViewStyleSuccess.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewStyleSuccess.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +91,8 @@
 				D320AF512453C9BC000BA8B3 /* Info.plist */,
 				D320AF522453C9BC000BA8B3 /* main.m */,
 				D320AF592453CA09000BA8B3 /* BannerView.h */,
+				D3C2EBAA246638E50030F6AB /* BannerViewStyle.h */,
+				D3C2EBAB24663AFF0030F6AB /* BannerViewStyleSuccess.h */,
 				D320AF5A2453CA09000BA8B3 /* BannerView.m */,
 				D320AF8424550EB1000BA8B3 /* BannerPresentationState.h */,
 				D320AF9124567999000BA8B3 /* FloatingBannerView */,
