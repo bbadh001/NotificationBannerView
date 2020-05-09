@@ -13,13 +13,9 @@
 #define kDismissalVelocityAnimationDefault 150.0
 
 #define kAnimationVelocityMax 200.0
-#define kAnimationVelocityMin 50.0
+#define kAnimationVelocityMin 100.0
 
 #define kDistFromParentViewToAutoDismiss 50.0
-
-//TODOS:
-//remove spring dampening on dismissal off screen
-//if banner is completely off screen, even if user hasnt let go yet, dismiss
 
 @interface BannerView ()
 
@@ -125,6 +121,8 @@
         self.subTitleLabelLeftPadding = (CGFloat) 16.0;
         
         self.presentationState = BannerPresentationStateHidden;
+        
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(didRotate) name:UIDeviceOrientationDidChangeNotification object:nil];
         
         [self setupGestureRecongizer];
         [self setupLabels:mainTitle subTitle:subTitle];
@@ -297,5 +295,16 @@
 
     [sender setTranslation:CGPointMake(0, 0) inView:self];
 }
+
+-(void)didRotate {
+    if (!self.superview) { return; }
+    self.frame = CGRectMake(self.frame.origin.x,
+                            self.frame.origin.y,
+                            self.superview.frame.size.width,
+                            self.frame.size.height
+    );
+}
+
+
 
 @end

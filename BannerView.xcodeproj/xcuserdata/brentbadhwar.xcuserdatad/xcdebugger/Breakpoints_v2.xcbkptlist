@@ -7,16 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "2F2F2642-3562-4445-8ACB-83BF747370DF"
+            uuid = "EF3A1B4E-20B0-4D00-82D5-14E39EF1907C"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "BannerView/BannerView.m"
+            filePath = "BannerView/ViewController.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "230"
-            endingLineNumber = "230"
-            landmarkName = "-handlePan:"
+            startingLineNumber = "34"
+            endingLineNumber = "34"
+            landmarkName = "-presentBtnTapped:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

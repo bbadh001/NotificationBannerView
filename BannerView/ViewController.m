@@ -37,6 +37,7 @@
 
 
 - (IBAction)dismissBtnTapped:(UIButton *)sender {
+//    [self.bannerView removeFromSuperview];
     [self.bannerView dismiss];
 }
 
