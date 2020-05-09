@@ -10,7 +10,7 @@
 #import "BannerPresentationState.h"
 
 #define kDefaultAnimationVelocity 200.0
-#define kAnimationVelocityMax 300.0
+#define kAnimationVelocityMax 250.0
 
 #define kDistFromParentViewToAutoDismiss 50.0
 
@@ -103,6 +103,9 @@
 -(void)setupGestureRecongizer {
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     [self addGestureRecognizer:panGesture];
+    UISwipeGestureRecognizer *swipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipe:)];
+    swipeGesture.direction = UISwipeGestureRecognizerDirectionUp;
+    [self addGestureRecognizer:swipeGesture];
 }
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
@@ -131,7 +134,7 @@
     
     // make sure we are in the hidden state
     if (self.presentationState != BannerPresentationStateHidden) { return; }
-    
+    NSLog(@"%f",self.bannerHeight);
     // add superview and init position
     [vc.view addSubview:self];
     self.frame = CGRectMake(0.0, -self.bannerHeight, vc.view.frame.size.width, self.bannerHeight);
@@ -245,7 +248,7 @@
     if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
         // check to see if banner is too close edge, we should force a dismiss animation
         // otherwise, just animate back to presenting position
-        if (self.frame.origin.y+self.frame.size.height <= kDistFromParentViewToAutoDismiss) {
+        if (self.frame.origin.y+self.frame.size.height <= self.bannerHeight*.7) {
             if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
                 self.presentationState != BannerPresentationStateHidden) {
                 self.presentationState = BannerPresentationStateAnimatingDismissal;
@@ -303,6 +306,11 @@
     }
 
     [sender setTranslation:CGPointMake(0, 0) inView:self];
+}
+
+-(void)handleSwipe:(UISwipeGestureRecognizer*)sender {
+    
+    [self dismiss];
 }
 
 @end
