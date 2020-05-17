@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle;
 
 -(void)presentOnViewController:(UIViewController*)vc;
--(void)dismiss;
+-(void)dismissAndRemoveAsSubviewOnCompletion:(BOOL)removeOnCompletion ;
 
 @end
 

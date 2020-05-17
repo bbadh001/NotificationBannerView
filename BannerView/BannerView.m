@@ -90,23 +90,11 @@
     self.panGesture = panGesture;
 }
 
-- (void)didMoveToSuperview {
-    if (self.superview) {
-//        self.translatesAutoresizingMaskIntoConstraints = NO;
-//        NSArray* constraints = [NSArray arrayWithObjects:
-//            [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:self.superview.frame.size.width],
-//        nil];
-//
-//        [NSLayoutConstraint activateConstraints:constraints];
-//        [self addConstraints:constraints];
-//
-//        [self layoutIfNeeded];
-    }
-}
-
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
     self = [super init];
     if (self != nil) {
+        self.translatesAutoresizingMaskIntoConstraints = NO;
+
         self.mainTitleLabelTopPadding = (CGFloat) 16.0;
         self.subTitleLabelTopPadding = (CGFloat) 16.0;
         
@@ -126,29 +114,29 @@
 #pragma mark Public Methods
 
 -(void)presentOnViewController:(UIViewController*)vc {
-    // make sure the vc have a superview
+    // make sure we have a superview to present on
     if (!vc) { return; }
     
     // make sure we are in the hidden state
     if (self.presentationState != BannerPresentationStateHidden &&
         self.presentationState != BannerPresentationStateAnimatingDismissal) { return; }
     
-    // add superview and init position
-    if (![self isDescendantOfView:vc.view]) {
+    // check to see if the current superview is the one that is passed in as a parameter
+    // if it's different then the current, then we need to init with some constraints
+    if (vc.view != self.superview) {
         [vc.view addSubview:self];
-        self.translatesAutoresizingMaskIntoConstraints = NO;
         NSArray* constraints = [NSArray arrayWithObjects:
-            [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:self.superview.frame.size.width],
+            [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:vc.view .frame.size.width],
         nil];
-        
-        self.widthConstraint = constraints[0];
-                
+
         [NSLayoutConstraint activateConstraints:constraints];
         [self addConstraints:constraints];
+        
         [self layoutIfNeeded];
         
         [self setupLabels:@"Success!" subTitle:@"Looks like we're good boys! We made it! Well, kinda maybe. Hopefully!"];
     }
+    
     self.frame = CGRectMake(0,  -self.frame.size.height,  self.frame.size.width,  self.frame.size.height);
     
     [self.panGesture setEnabled:YES];
@@ -166,7 +154,7 @@
      ];
 }
 
--(void)dismiss {
+-(void)dismissAndRemoveAsSubviewOnCompletion:(BOOL)removeOnCompletion {
     // make sure we are a subview of something
     if (self.superview == nil) { return; }
     // if we are hidden or in the middle of the dismissal, we have nothing to do here
@@ -183,6 +171,7 @@
             springDamping: 1.0
             onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStateHidden;
+                if (removeOnCompletion) { [self removeFromSuperview]; }
             }
      ];
 }
@@ -230,7 +219,7 @@
     
     //if we are hidden, force dismiss
     if (!CGRectIntersectsRect(self.frame, self.superview.frame)) {
-        [self dismiss];
+        [self dismissAndRemoveAsSubviewOnCompletion:NO];
         return;
     }
     

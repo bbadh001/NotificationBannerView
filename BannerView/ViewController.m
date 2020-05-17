@@ -12,7 +12,7 @@
 @interface ViewController ()
 
 @property (weak, nonatomic) IBOutlet UIButton *dismissBtn;
-@property (weak, nonatomic) BannerView* bannerView;
+@property (strong, nonatomic) BannerView* bannerView;
 
 @end
 
@@ -27,18 +27,16 @@
     ];
     self.bannerView = banner;
     [self.bannerView setBackgroundColor: [UIColor colorWithRed:.10 green:.63 blue:.37 alpha:1.0]];
-    [self.bannerView presentOnViewController:self];
 }
 
 - (IBAction)presentBtnTapped:(UIButton *)sender {
-    
     [self.bannerView presentOnViewController:self];
 }
 
 
 - (IBAction)dismissBtnTapped:(UIButton *)sender {
 //    [self.bannerView removeFromSuperview];
-    [self.bannerView dismiss];
+    [self.bannerView dismissAndRemoveAsSubviewOnCompletion:NO];
 }
 
 
