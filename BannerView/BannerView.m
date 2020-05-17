@@ -40,7 +40,7 @@
 #pragma mark Setup and Init Methods
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
-//    self.translatesAutoresizingMaskIntoConstraints = NO;
+    self.translatesAutoresizingMaskIntoConstraints = NO;
     
     UILabel* mainTitleLabel = [UILabel new];
     UILabel* subTitleLabel = [UILabel new];
@@ -56,38 +56,18 @@
     
     subTitleLabel.text = subTitle;
     subTitleLabel.textColor = UIColor.whiteColor;
-    subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
+    subTitleLabel.font = [UIFont systemFontOfSize:35.0 weight:UIFontWeightMedium];
     subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [subTitleLabel setNumberOfLines:5];
 //    subTitleLabel.layer.borderColor = UIColor.redColor.CGColor;
 //    subTitleLabel.layer.borderWidth = 2.0;
     [subTitleLabel sizeToFit];
-    
-//    [self addSubview: mainTitleLabel];
-//    [self addSubview: subTitleLabel];
-    
-//    NSArray* mainTitleLabelConstraints = [NSArray arrayWithObjects: [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:self.mainTitleLabelTopPadding], [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:self.mainTitleLabelLeftPadding], nil];
 //
-//    [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
-//    [self addConstraints:mainTitleLabelConstraints];
-//
-//    NSArray* subTitleLabelConstraints = [NSArray arrayWithObjects:
-//        [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:mainTitleLabel attribute:NSLayoutAttributeBottom multiplier:1.0 constant:self.subTitleLabelTopPadding],
-//        [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:self.subTitleLabelLeftPadding],
-//        [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-self.subTitleLabelTopPadding],
-//        [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:-self.subTitleLabelTopPadding], nil];
-//
-//    [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
-//    [self addConstraints:subTitleLabelConstraints];
-//
-    CGFloat bannerHeight = self.mainTitleLabelTopPadding+mainTitleLabel.frame.size.height+self.subTitleLabelTopPadding+subTitleLabel.frame.size.height+self.subTitleLabelTopPadding+20.0;
-    NSLog(@"Height %f", bannerHeight);
-    self.bannerHeight = bannerHeight;
     
     UIStackView* stackView = [UIStackView new];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     stackView.axis = UILayoutConstraintAxisVertical;
-    stackView.distribution = UIStackViewDistributionEqualSpacing;
+    stackView.distribution = UIStackViewDistributionFillProportionally;
     [stackView addArrangedSubview:mainTitleLabel];
     [stackView addArrangedSubview:subTitleLabel];
     stackView.spacing = 8.0;
@@ -98,17 +78,35 @@
     
     NSArray* stackViewConstraints = [NSArray arrayWithObjects:
         [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0],
-        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0],
+        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0],
+        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0],
     nil];
     
     [NSLayoutConstraint activateConstraints:stackViewConstraints];
     [self addConstraints:stackViewConstraints];
+    
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
 }
 
 -(void)setupGestureRecongizer {
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     [self addGestureRecognizer:panGesture];
     self.panGesture = panGesture;
+}
+
+- (void)didMoveToSuperview {
+    if (self.superview) {
+        self.translatesAutoresizingMaskIntoConstraints = NO;
+        NSArray* constraints = [NSArray arrayWithObjects:
+            [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:self.superview.frame.size.width],
+        nil];
+                
+        [NSLayoutConstraint activateConstraints:constraints];
+        [self addConstraints:constraints];
+        
+        [self layoutIfNeeded];
+    }
 }
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
@@ -125,7 +123,7 @@
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(handleRotation) name:UIDeviceOrientationDidChangeNotification object:nil];
         
         [self setupGestureRecongizer];
-        [self setupLabels:mainTitle subTitle:subTitle];
+//        [self setupLabels:mainTitle subTitle:subTitle];
     }
     
     return self;
@@ -144,9 +142,12 @@
     
     // add superview and init position
     [vc.view addSubview:self];
-    self.frame = CGRectMake(0.0, -self.bannerHeight, vc.view.frame.size.width, self.bannerHeight);
-    
+    [self setupLabels:@"Test" subTitle:@"Test"];
+    self.bannerHeight = self.frame.size.height;
+        
     [self.panGesture setEnabled:YES];
+    
+    self.transform = CGAffineTransformMakeTranslation(0.0, -self.frame.size.height);
 
     // present the banner
     [self.layer removeAllAnimations];
@@ -172,7 +173,7 @@
     
     [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingDismissal;
-    [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
+    [self animateToPosition: CGRectMake(0.0, -self.frame.size.height, self.superview.frame.size.width, self.bannerHeight)
             withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
             springDamping: 1.0
@@ -202,7 +203,8 @@
           initialSpringVelocity: initialVelocity
                         options: UIViewAnimationOptionAllowUserInteraction
         animations: ^{
-            self.frame = targetPosition;
+            self.transform = CGAffineTransformMakeTranslation(targetPosition.origin.x,targetPosition.origin.y);
+            [self layoutIfNeeded];
         }
         completion: ^(BOOL finished) {
             completionBlock(finished);
@@ -267,22 +269,23 @@
         if (delta.y < 0) {
             //user is guiding the banner up
             nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
-            self.frame = nextPosition;
+//            self.frame = nextPosition;
+//            self.transform = CGAffineTransformMakeTranslation(nextPosition.origin.x, nextPosition.origin.y);
         } else {
             //user is guiding the banner down
             //if past presenting postion, move normally
             //otherwise give a inverse movement
             if (self.frame.origin.y <= 0) {
                 nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.bounds.size.width, self.bannerHeight);
-                self.frame = nextPosition;
+//                self.frame = nextPosition;
             } else {
                 //inverse movement
                 nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.5/self.frame.origin.y), self.bounds.size.width, self.bannerHeight);
-                self.frame = nextPosition;
+//                self.frame = nextPosition;
             }
         }
-        
-        self.frame = nextPosition;
+        self.transform = CGAffineTransformMakeTranslation(nextPosition.origin.x, nextPosition.origin.y);
+//        self.frame = nextPosition;
     }
 
     [sender setTranslation:CGPointMake(0, 0) inView:self];
