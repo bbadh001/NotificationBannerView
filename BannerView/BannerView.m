@@ -112,30 +112,25 @@
 }
 
 #pragma mark Public Methods
-
--(void)presentOnViewController:(UIViewController*)vc {
+-(void)presentOnView:(UIView*)view {
     // make sure we have a superview to present on
-    if (!vc) { return; }
-    
+    if (!view) { return; }
+
     // make sure we are in the hidden state
     if (self.presentationState != BannerPresentationStateHidden &&
         self.presentationState != BannerPresentationStateAnimatingDismissal) { return; }
     
-    // check to see if the current superview is the one that is passed in as a parameter
-    // if it's different then the current, then we need to init with some constraints
-    if (vc.view != self.superview) {
-        [vc.view addSubview:self];
-        NSArray* constraints = [NSArray arrayWithObjects:
-            [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:vc.view .frame.size.width],
-        nil];
+    [view addSubview:self];
+    NSArray* constraints = [NSArray arrayWithObjects:
+        [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:view .frame.size.width],
+    nil];
 
-        [NSLayoutConstraint activateConstraints:constraints];
-        [self addConstraints:constraints];
-        
-        [self layoutIfNeeded];
-        
-        [self setupLabels:@"Success!" subTitle:@"Looks like we're good boys! We made it! Well, kinda maybe. Hopefully!"];
-    }
+    [NSLayoutConstraint activateConstraints:constraints];
+    [self addConstraints:constraints];
+    
+    [self layoutIfNeeded];
+    
+    [self setupLabels:@"Success!" subTitle:@"Looks like we're good boys! We made it! Well, kinda maybe. Hopefully!"];
     
     self.frame = CGRectMake(0,  -self.frame.size.height,  self.frame.size.width,  self.frame.size.height);
     
@@ -154,7 +149,7 @@
      ];
 }
 
--(void)dismissAndRemoveAsSubviewOnCompletion:(BOOL)removeOnCompletion {
+-(void)dismiss {
     // make sure we are a subview of something
     if (self.superview == nil) { return; }
     // if we are hidden or in the middle of the dismissal, we have nothing to do here
@@ -171,7 +166,7 @@
             springDamping: 1.0
             onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStateHidden;
-                if (removeOnCompletion) { [self removeFromSuperview]; }
+                [self removeFromSuperview];
             }
      ];
 }
@@ -219,7 +214,7 @@
     
     //if we are hidden, force dismiss
     if (!CGRectIntersectsRect(self.frame, self.superview.frame)) {
-        [self dismissAndRemoveAsSubviewOnCompletion:NO];
+        [self dismiss];
         return;
     }
     
@@ -240,6 +235,7 @@
                           springDamping: 1.0
                            onCompletion: ^(BOOL finished) {
                             self.presentationState = BannerPresentationStateHidden;
+                            [self removeFromSuperview];
                         }
                  ];
             }

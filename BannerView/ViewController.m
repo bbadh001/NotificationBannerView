@@ -30,13 +30,12 @@
 }
 
 - (IBAction)presentBtnTapped:(UIButton *)sender {
-    [self.bannerView presentOnViewController:self];
+    [self.bannerView presentOnView:self.view];
 }
 
 
 - (IBAction)dismissBtnTapped:(UIButton *)sender {
-//    [self.bannerView removeFromSuperview];
-    [self.bannerView dismissAndRemoveAsSubviewOnCompletion:NO];
+    [self.bannerView dismiss];
 }
 
 
