@@ -40,8 +40,6 @@
 #pragma mark Setup and Init Methods
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
-    self.translatesAutoresizingMaskIntoConstraints = NO;
-    
     UILabel* mainTitleLabel = [UILabel new];
     UILabel* subTitleLabel = [UILabel new];
     
@@ -93,6 +91,7 @@
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
     self = [super init];
     if (self != nil) {
+        //for autolayout
         self.translatesAutoresizingMaskIntoConstraints = NO;
 
         self.mainTitleLabelTopPadding = (CGFloat) 16.0;
@@ -167,6 +166,10 @@
             onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStateHidden;
                 [self removeFromSuperview];
+                [self removeConstraints:[self constraints]];
+                for (UIView* subview in [self subviews]) {
+                    [subview removeFromSuperview];
+                }
             }
      ];
 }
@@ -225,19 +228,9 @@
         if (self.frame.origin.y+self.frame.size.height <= self.frame.size.height*0.8) {
             if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
                 self.presentationState != BannerPresentationStateHidden) {
-                self.presentationState = BannerPresentationStateAnimatingDismissal;
-                
-                CGFloat dismissVelocity = [self normalizeVelocity:velocity.y];
-                
-                [self animateToPosition: CGRectMake(0.0, -self.frame.size.height, self.frame.size.width, self.frame.size.height)
-                           withVelocity: dismissVelocity
-                        initialVelocity: 0.0
-                          springDamping: 1.0
-                           onCompletion: ^(BOOL finished) {
-                            self.presentationState = BannerPresentationStateHidden;
-                            [self removeFromSuperview];
-                        }
-                 ];
+                //could use this
+//                CGFloat dismissVelocity = [self normalizeVelocity:velocity.y];
+                [self dismiss];
             }
         } else {
             //animate back to presentation state
@@ -290,8 +283,9 @@
 
 -(void)handleRotation {
     if (!self.superview) { return; }
-    self.widthConstraint.constant = self.superview.frame.size.width;
-    [self setNeedsLayout];
+//    self.widthConstraint.constant = self.superview.frame.size.width;
+//    [self setNeedsLayout];
+//    [self layoutIfNeeded];
 }
 
 
