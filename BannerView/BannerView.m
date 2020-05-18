@@ -19,19 +19,22 @@
 
 @interface BannerView ()
 
-@property (nonatomic, weak) UIView* parentView;
-
 @property (nonatomic) BannerPresentationState presentationState;
+
+@property (nonatomic, copy) NSString* mainTitleText;
+@property (nonatomic, copy) NSString* subTitleText;
+
+@property (strong, nonatomic) UILabel* mainTitleLabel;
+@property (strong, nonatomic) UILabel* subTitleLabel;
 
 @property (nonatomic) CGFloat mainTitleLabelTopPadding;
 @property (nonatomic) CGFloat subTitleLabelTopPadding;
-
 @property (nonatomic) CGFloat mainTitleLabelLeftPadding;
 @property (nonatomic) CGFloat subTitleLabelLeftPadding;
 
-@property (nonatomic) UIPanGestureRecognizer* panGesture;
-
 @property (nonatomic) NSLayoutConstraint* widthConstraint;
+
+@property (nonatomic) UIPanGestureRecognizer* panGesture;
 
 @end
 
@@ -40,30 +43,35 @@
 #pragma mark Setup and Init Methods
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
-    UILabel* mainTitleLabel = [UILabel new];
-    UILabel* subTitleLabel = [UILabel new];
+    self.mainTitleLabel = [UILabel new];
+    self.subTitleLabel = [UILabel new];
+        
+    //TODO: attribute text for labels
+    self.mainTitleLabel.text = mainTitle;
+    self.mainTitleLabel.textColor = UIColor.whiteColor;
+    self.mainTitleLabel.font = [UIFont systemFontOfSize:18.0 weight:UIFontWeightBold];
+    self.mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.mainTitleLabel setNumberOfLines:1];
+    [self.mainTitleLabel sizeToFit];
     
-    //attribute text would be a good idea here
-    mainTitleLabel.text = mainTitle;
-    mainTitleLabel.textColor = UIColor.whiteColor;
-    mainTitleLabel.font = [UIFont systemFontOfSize:18.0 weight:UIFontWeightBold];
-    mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [mainTitleLabel setNumberOfLines:1];
-    [mainTitleLabel sizeToFit];
+    self.subTitleLabel.text = subTitle;
+    self.subTitleLabel.textColor = UIColor.whiteColor;
+    self.subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
+    self.subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.subTitleLabel setNumberOfLines:3];
+    [self.subTitleLabel sizeToFit];
+}
+
+-(void)configureConstraints {
+    if (!self.superview) { return; }
     
-    subTitleLabel.text = subTitle;
-    subTitleLabel.textColor = UIColor.whiteColor;
-    subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
-    subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [subTitleLabel setNumberOfLines:2];
-    [subTitleLabel sizeToFit];
-    
+    //config stackviews
     UIStackView* stackView = [UIStackView new];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     stackView.axis = UILayoutConstraintAxisVertical;
     stackView.distribution = UIStackViewDistributionFillProportionally;
-    [stackView addArrangedSubview:mainTitleLabel];
-    [stackView addArrangedSubview:subTitleLabel];
+    [stackView addArrangedSubview:self.mainTitleLabel];
+    [stackView addArrangedSubview:self.subTitleLabel];
     stackView.spacing = 8.0;
     
     [self addSubview:stackView];
@@ -78,11 +86,20 @@
     [NSLayoutConstraint activateConstraints:stackViewConstraints];
     [self addConstraints:stackViewConstraints];
     
+    //set banners width constraint
+    NSArray* constraints = [NSArray arrayWithObjects:
+        [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:self.superview.frame.size.width],
+    nil];
+
+    [NSLayoutConstraint activateConstraints:constraints];
+    [self addConstraints:constraints];
+    
     [self setNeedsLayout];
     [self layoutIfNeeded];
+
 }
 
--(void)setupGestureRecongizer {
+-(void)setupGestureRecongizers {
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     [self addGestureRecognizer:panGesture];
     self.panGesture = panGesture;
@@ -91,20 +108,24 @@
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
     self = [super init];
     if (self != nil) {
-        //for autolayout
-        self.translatesAutoresizingMaskIntoConstraints = NO;
-
+        //setup labels (we have to wait to for a 'presentOnView' call first to setup constriants though)
+        self.mainTitleText = mainTitle;
+        self.subTitleText = subTitle;
         self.mainTitleLabelTopPadding = (CGFloat) 16.0;
         self.subTitleLabelTopPadding = (CGFloat) 16.0;
-        
         self.mainTitleLabelLeftPadding = (CGFloat) 16.0;
         self.subTitleLabelLeftPadding = (CGFloat) 16.0;
+        [self setupLabels:mainTitle subTitle:subTitle];
+    
+        //for autolayout
+        self.translatesAutoresizingMaskIntoConstraints = NO;
         
+        //init presentation state
         self.presentationState = BannerPresentationStateHidden;
         
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(handleRotation) name:UIDeviceOrientationDidChangeNotification object:nil];
         
-        [self setupGestureRecongizer];
+        [self setupGestureRecongizers];
     }
     
     return self;
@@ -119,20 +140,15 @@
     if (self.presentationState != BannerPresentationStateHidden &&
         self.presentationState != BannerPresentationStateAnimatingDismissal) { return; }
     
+    // add banner to superview...
+    // now we can start configuring constrints as we know our superview
     [view addSubview:self];
-    NSArray* constraints = [NSArray arrayWithObjects:
-        [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:view .frame.size.width],
-    nil];
-
-    [NSLayoutConstraint activateConstraints:constraints];
-    [self addConstraints:constraints];
-    
-    [self layoutIfNeeded];
-    
-    [self setupLabels:@"Success!" subTitle:@"Looks like we're good boys! We made it! Well, kinda maybe. Hopefully!"];
-    
+    [self configureConstraints];
+        
+    // init banner right off the edge of its superview
     self.frame = CGRectMake(0,  -self.frame.size.height,  self.frame.size.width,  self.frame.size.height);
     
+    // pan gesture recongizer will be toggled on/off on present and dismiss respectively just as a precaution to avoid any possible bad states (e.g being able to touch banner when its off screen after being dismissed)
     [self.panGesture setEnabled:YES];
 
     // present the banner
@@ -151,6 +167,7 @@
 -(void)dismiss {
     // make sure we are a subview of something
     if (self.superview == nil) { return; }
+
     // if we are hidden or in the middle of the dismissal, we have nothing to do here
     if (self.presentationState == BannerPresentationStateHidden ||
         self.presentationState == BannerPresentationStateAnimatingDismissal) { return; }
@@ -177,6 +194,8 @@
 #pragma mark Private Methods
 
 /// General animation method
+///
+///
 -(void)animateToPosition:(CGRect)targetPosition
             withVelocity:(CGFloat)velocity
          initialVelocity:(CGFloat)initialVelocity
@@ -288,6 +307,6 @@
 //    [self layoutIfNeeded];
 }
 
-
+ 
 
 @end

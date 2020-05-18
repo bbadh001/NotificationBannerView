@@ -23,7 +23,7 @@
     // Do any additional setup after loading the view.
     BannerView* banner = [[BannerView alloc]
                           initWithTitle:@"Success notifcation!"
-                          subTitle:@"A simple banner that presents and dismisses."
+                          subTitle:@"A simple banner that presents and dismisses. A banner that presents and dismisses that is very simple!"
     ];
     self.bannerView = banner;
     [self.bannerView setBackgroundColor: [UIColor colorWithRed:.10 green:.63 blue:.37 alpha:1.0]];
