@@ -9,19 +9,35 @@
 #import "BannerView.h"
 #import "BannerPresentationState.h"
 
-#define kDefaultAnimationVelocity 300.0
+
+#define kAnimationVelocityDefault 300.0
+#define kDismissalVelocityAnimationDefault 150.0
+
+#define kAnimationVelocityMax 200.0
+#define kAnimationVelocityMin 100.0
+
+#define kDistFromParentViewToAutoDismiss 50.0
+
 
 @interface BannerView ()
 
 @property (nonatomic) BannerPresentationState presentationState;
 
+@property (nonatomic, copy) NSString* mainTitleText;
+@property (nonatomic, copy) NSString* subTitleText;
+
+@property (strong, nonatomic) UILabel* mainTitleLabel;
+@property (strong, nonatomic) UILabel* subTitleLabel;
+
 @property (nonatomic) CGFloat mainTitleLabelTopPadding;
 @property (nonatomic) CGFloat subTitleLabelTopPadding;
-
 @property (nonatomic) CGFloat mainTitleLabelLeftPadding;
 @property (nonatomic) CGFloat subTitleLabelLeftPadding;
 
-@property (nonatomic) CGFloat bannerHeight; //might be able to remove if we can set height in setup
+
+@property (nonatomic) NSLayoutConstraint* widthConstraint;
+
+@property (nonatomic) UIPanGestureRecognizer* panGesture;
 
 @end
 
@@ -30,107 +46,120 @@
 #pragma mark Setup and Init Methods
 
 -(void)setupLabels:(NSString*)mainTitle subTitle:(NSString*)subTitle {
-    UILabel* mainTitleLabel = [UILabel new];
-    UILabel* subTitleLabel = [UILabel new];
+    self.mainTitleLabel = [UILabel new];
+    self.subTitleLabel = [UILabel new];
+        
+    //TODO: attribute text for labels
+    self.mainTitleLabel.text = mainTitle;
+    self.mainTitleLabel.textColor = UIColor.whiteColor;
+    self.mainTitleLabel.font = [UIFont systemFontOfSize:18.0 weight:UIFontWeightBold];
+    self.mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.mainTitleLabel setNumberOfLines:1];
+    [self.mainTitleLabel sizeToFit];
     
-    //attribute text would be a good idea here
-    mainTitleLabel.text = mainTitle;
-    mainTitleLabel.textColor = UIColor.whiteColor;
-    mainTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightBold];
-    mainTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [mainTitleLabel sizeToFit];
+    self.subTitleLabel.text = subTitle;
+    self.subTitleLabel.textColor = UIColor.whiteColor;
+    self.subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
+    self.subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.subTitleLabel setNumberOfLines:3];
+    [self.subTitleLabel sizeToFit];
+}
+
+-(void)configureConstraints {
+    if (!self.superview) { return; }
     
-    subTitleLabel.text = subTitle;
-    subTitleLabel.textColor = UIColor.whiteColor;
-    subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
-    subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [subTitleLabel setNumberOfLines:3];
-    [subTitleLabel sizeToFit];
-    
-//    [self addSubview: mainTitleLabel];
-//    [self addSubview: subTitleLabel];
-    
-//    NSArray* mainTitleLabelConstraints = [NSArray arrayWithObjects: [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:self.mainTitleLabelTopPadding], [NSLayoutConstraint constraintWithItem:mainTitleLabel attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:self.mainTitleLabelLeftPadding], nil];
-//
-//    [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
-//    [self addConstraints:mainTitleLabelConstraints];
-//
-//    NSArray* subTitleLabelConstraints = [NSArray arrayWithObjects:
-//        [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:mainTitleLabel attribute:NSLayoutAttributeBottom multiplier:1.0 constant:self.subTitleLabelTopPadding],
-//        [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:self.subTitleLabelLeftPadding],
-//        [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-self.subTitleLabelTopPadding],
-//        [NSLayoutConstraint constraintWithItem:subTitleLabel attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:-self.subTitleLabelTopPadding], nil];
-//
-//    [NSLayoutConstraint activateConstraints:mainTitleLabelConstraints];
-//    [self addConstraints:subTitleLabelConstraints];
-//
-    CGFloat bannerHeight = self.mainTitleLabelTopPadding+mainTitleLabel.frame.size.height+self.subTitleLabelTopPadding+subTitleLabel.frame.size.height+self.subTitleLabelTopPadding+20.0;
-    NSLog(@"Height %f", bannerHeight);
-    self.bannerHeight = bannerHeight;
-    
+    //config stackviews
     UIStackView* stackView = [UIStackView new];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     stackView.axis = UILayoutConstraintAxisVertical;
-    stackView.distribution = UIStackViewDistributionEqualSpacing;
-    [stackView addArrangedSubview:mainTitleLabel];
-    [stackView addArrangedSubview:subTitleLabel];
+    stackView.distribution = UIStackViewDistributionFillProportionally;
+    [stackView addArrangedSubview:self.mainTitleLabel];
+    [stackView addArrangedSubview:self.subTitleLabel];
     stackView.spacing = 8.0;
     
     [self addSubview:stackView];
-    stackView.layer.borderColor = UIColor.redColor.CGColor;
-    stackView.layer.borderWidth = 2.0;
     
     NSArray* stackViewConstraints = [NSArray arrayWithObjects:
-        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0],
-        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0],
+        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:20.0],
+        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-8.0],
+        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:8.0],
+        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:-8.0],
     nil];
     
     [NSLayoutConstraint activateConstraints:stackViewConstraints];
     [self addConstraints:stackViewConstraints];
+    
+    //set banners width constraint
+    NSArray* constraints = [NSArray arrayWithObjects:
+        [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:self.superview.frame.size.width],
+    nil];
+
+    [NSLayoutConstraint activateConstraints:constraints];
+    [self addConstraints:constraints];
+    
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
+
 }
 
 -(void)setupGestureRecongizers {
-    UISwipeGestureRecognizer* swipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipe:)];
-    swipeGesture.direction = UISwipeGestureRecognizerDirectionUp;
-    [self addGestureRecognizer:swipeGesture];
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+    [self addGestureRecognizer:panGesture];
+    self.panGesture = panGesture;
 }
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle {
     self = [super init];
     if (self != nil) {
+        //setup labels (we have to wait to for a 'presentOnView' call first to setup constriants though)
+        self.mainTitleText = mainTitle;
+        self.subTitleText = subTitle;
         self.mainTitleLabelTopPadding = (CGFloat) 16.0;
         self.subTitleLabelTopPadding = (CGFloat) 16.0;
-        
         self.mainTitleLabelLeftPadding = (CGFloat) 16.0;
         self.subTitleLabelLeftPadding = (CGFloat) 16.0;
+        [self setupLabels:mainTitle subTitle:subTitle];
+    
+        //for autolayout
+        self.translatesAutoresizingMaskIntoConstraints = NO;
         
+        //init presentation state
         self.presentationState = BannerPresentationStateHidden;
         
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(handleRotation) name:UIDeviceOrientationDidChangeNotification object:nil];
+        
         [self setupGestureRecongizers];
-        [self setupLabels:mainTitle subTitle:subTitle];
     }
     
     return self;
 }
 
 #pragma mark Public Methods
+-(void)presentOnView:(UIView*)view {
+    // make sure we have a superview to present on
+    if (!view) { return; }
 
--(void)presentOnViewController:(UIViewController*)vc {
-    // make sure the vc have a superview
-    if (!vc) { return; }
-    
     // make sure we are in the hidden state
-    if (self.presentationState != BannerPresentationStateHidden) { return; }
+    if (self.presentationState != BannerPresentationStateHidden &&
+        self.presentationState != BannerPresentationStateAnimatingDismissal) { return; }
     
-    // add superview and init position
-    [vc.view addSubview:self];
-    self.frame = CGRectMake(0.0, -self.bannerHeight, vc.view.frame.size.width, self.bannerHeight);
+    // add banner to superview...
+    // now we can start configuring constrints as we know our superview
+    [view addSubview:self];
+    [self configureConstraints];
+        
+    // init banner right off the edge of its superview
+    self.frame = CGRectMake(0,  -self.frame.size.height,  self.frame.size.width,  self.frame.size.height);
+    
+    // pan gesture recongizer will be toggled on/off on present and dismiss respectively just as a precaution to avoid any possible bad states (e.g being able to touch banner when its off screen after being dismissed)
+    [self.panGesture setEnabled:YES];
 
     // present the banner
     self.presentationState = BannerPresentationStateAnimatingPresentation;
-    [self animateToPosition: CGRectMake(0.0, 0.0, vc.view.frame.size.width, self.bannerHeight)
-               withVelocity: kDefaultAnimationVelocity
+    [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
+               withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
+            springDamping: 0.7
                onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStatePresenting;
             }
@@ -145,12 +174,21 @@
     if (self.presentationState == BannerPresentationStateHidden ||
         self.presentationState == BannerPresentationStateAnimatingDismissal) { return; }
     
+    [self.panGesture setEnabled:NO];
+    
+    [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingDismissal;
-    [self animateToPosition: CGRectMake(0.0, -self.bannerHeight, self.superview.frame.size.width, self.bannerHeight)
-               withVelocity: kDefaultAnimationVelocity
+    [self animateToPosition: CGRectMake(0.0, -self.frame.size.height, self.frame.size.width, self.frame.size.height)
+            withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
-               onCompletion: ^(BOOL finished) {
+            springDamping: 1.0
+            onCompletion: ^(BOOL finished) {
                 self.presentationState = BannerPresentationStateHidden;
+                [self removeFromSuperview];
+                [self removeConstraints:[self constraints]];
+                for (UIView* subview in [self subviews]) {
+                    [subview removeFromSuperview];
+                }
             }
      ];
 }
@@ -158,24 +196,29 @@
 #pragma mark Private Methods
 
 /// General animation method
+///
+///
 -(void)animateToPosition:(CGRect)targetPosition
             withVelocity:(CGFloat)velocity
          initialVelocity:(CGFloat)initialVelocity
+           springDamping:(CGFloat)springDampingCoef
             onCompletion:(void (^)(BOOL finished))completionBlock {
     [self.layer removeAllAnimations];
 
     CGRect currentPosition = self.frame;
     CGFloat distanceToTargetPosition = fabs(currentPosition.origin.y-targetPosition.origin.y);
     NSTimeInterval animationTime = distanceToTargetPosition/fabs(velocity);
-    
+
+//    NSLog(@"animate time %f", animationTime);
+
     
     [UIView animateWithDuration: animationTime
                           delay: 0.0
-         usingSpringWithDamping: 0.7
+         usingSpringWithDamping: springDampingCoef
           initialSpringVelocity: initialVelocity
                         options: UIViewAnimationOptionAllowUserInteraction
         animations: ^{
-            self.frame = targetPosition;
+              self.frame = targetPosition;
         }
         completion: ^(BOOL finished) {
             completionBlock(finished);
@@ -184,9 +227,88 @@
 }
 
 #pragma mark Gesture Recognizer Methods
+ 
+///The magic function
+-(void)handlePan:(UIPanGestureRecognizer*)sender {
+    CGPoint delta = [sender translationInView:self.superview];
+    CGPoint velocity = [sender velocityInView:self];
+//    NSLog(@"Velocity: %f", velocity.y);
+    
+    //no reason to be here anyways
+    if (self.presentationState == BannerPresentationStateHidden) {
+        return;
+    }
+    
+    //if we are hidden, force dismiss
+    if (!CGRectIntersectsRect(self.frame, self.superview.frame)) {
+        [self dismiss];
+        return;
+    }
+    
+    //user has stopped touching the banner
+    if (sender.state == UIGestureRecognizerStateEnded || sender.state == UIGestureRecognizerStateCancelled) {
+        // check to see if banner is too close edge, we should force a dismiss animation
+        // otherwise, just animate back to presenting position
+        if (self.frame.origin.y+self.frame.size.height <= self.frame.size.height*0.8) {
+            if (self.presentationState != BannerPresentationStateAnimatingDismissal &&
+                self.presentationState != BannerPresentationStateHidden) {
+                //could use this
+//                CGFloat dismissVelocity = [self normalizeVelocity:velocity.y];
+                [self dismiss];
+            }
+        } else {
+            //animate back to presentation state
+            self.presentationState = BannerPresentationStateAnimatingPresentation;
+            [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
+                       withVelocity: kAnimationVelocityMin
+                    initialVelocity: 0.0
+                      springDamping: 0.7
+                       onCompletion: ^(BOOL finished) {
+                        self.presentationState = BannerPresentationStatePresenting;
+                    }
+             ];
+        }
+    } else {
+        //not close to edge yet, so move banner wherever the touch guides us
+        CGRect nextPosition = self.frame;
+        if (delta.y < 0) {
+            //user is guiding the banner up
+            nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.frame.size.width, self.frame.size.height);
+        } else {
+            //user is guiding the banner down
+            //if past presenting postion, move normally
+            //otherwise give a inverse movement
+            if (self.frame.origin.y <= 0) {
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.frame.size.width, self.frame.size.height);
+            } else {
+                //inverse movement
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.5/self.frame.origin.y), self.frame.size.width, self.frame.size.height);
+            }
+        }
+        self.frame = nextPosition;
+    }
 
--(void)handleSwipe:(UIPanGestureRecognizer*)sender {
-    [self dismiss];
+    [sender setTranslation:CGPointMake(0, 0) inView:self];
 }
 
+//used to normalize a velocity value to avoid extreme values, to avoid extreme animation times
+-(CGFloat)normalizeVelocity:(CGFloat)velocity {
+    CGFloat currentVelocity = fabs(velocity);
+    CGFloat normalizedVelocity = currentVelocity;
+    if (currentVelocity >= kAnimationVelocityMax) {
+        normalizedVelocity = kAnimationVelocityMax;
+    } else if (currentVelocity <= kAnimationVelocityMin) {
+        normalizedVelocity = kAnimationVelocityMin;
+    } else {
+        normalizedVelocity = currentVelocity;
+    }
+    return normalizedVelocity;
+}
+
+-(void)handleRotation {
+    if (!self.superview) { return; }
+//    self.widthConstraint.constant = self.superview.frame.size.width;
+//    [self setNeedsLayout];
+//    [self layoutIfNeeded];
+}
 @end
