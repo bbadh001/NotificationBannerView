@@ -91,9 +91,9 @@
 				D320AF512453C9BC000BA8B3 /* Info.plist */,
 				D320AF522453C9BC000BA8B3 /* main.m */,
 				D320AF592453CA09000BA8B3 /* BannerView.h */,
+				D320AF5A2453CA09000BA8B3 /* BannerView.m */,
 				D3C2EBAA246638E50030F6AB /* BannerViewStyle.h */,
 				D3C2EBAB24663AFF0030F6AB /* BannerViewStyleSuccess.h */,
-				D320AF5A2453CA09000BA8B3 /* BannerView.m */,
 				D320AF8424550EB1000BA8B3 /* BannerPresentationState.h */,
 				D320AF9124567999000BA8B3 /* FloatingBannerView */,
 				D320AF90245676CC000BA8B3 /* Base */,
@@ -350,6 +350,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = "1.0 ";
 				PRODUCT_BUNDLE_IDENTIFIER = brentbadhwar.BannerView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -370,6 +371,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = "1.0 ";
 				PRODUCT_BUNDLE_IDENTIFIER = brentbadhwar.BannerView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

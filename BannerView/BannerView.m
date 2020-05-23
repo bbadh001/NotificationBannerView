@@ -34,7 +34,6 @@
 @property (nonatomic) CGFloat mainTitleLabelLeftPadding;
 @property (nonatomic) CGFloat subTitleLabelLeftPadding;
 
-
 @property (nonatomic) NSLayoutConstraint* widthConstraint;
 
 @property (nonatomic) UIPanGestureRecognizer* panGesture;
@@ -59,37 +58,60 @@
     
     self.subTitleLabel.text = subTitle;
     self.subTitleLabel.textColor = UIColor.whiteColor;
-    self.subTitleLabel.font = [UIFont systemFontOfSize:15.0 weight:UIFontWeightMedium];
+    self.subTitleLabel.font = [UIFont systemFontOfSize:13.0 weight:UIFontWeightMedium];
     self.subTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.subTitleLabel setNumberOfLines:3];
+    [self.subTitleLabel setNumberOfLines:2];
     [self.subTitleLabel sizeToFit];
 }
 
 -(void)configureConstraints {
     if (!self.superview) { return; }
-    
+
     //config stackviews
-    UIStackView* stackView = [UIStackView new];
-    stackView.translatesAutoresizingMaskIntoConstraints = NO;
-    stackView.axis = UILayoutConstraintAxisVertical;
-    stackView.distribution = UIStackViewDistributionFillProportionally;
-    [stackView addArrangedSubview:self.mainTitleLabel];
-    [stackView addArrangedSubview:self.subTitleLabel];
-    stackView.spacing = 8.0;
+    UIStackView* textStackView = [UIStackView new];
+    textStackView.translatesAutoresizingMaskIntoConstraints = NO;
+    textStackView.axis = UILayoutConstraintAxisVertical;
+    textStackView.distribution = UIStackViewDistributionFill;
+    [textStackView addArrangedSubview:self.mainTitleLabel];
+    [textStackView addArrangedSubview:self.subTitleLabel];
+    textStackView.spacing = 8.0;
+    [textStackView setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
+
+    UIActivityIndicatorView* leftView = [UIActivityIndicatorView new];
+    leftView.frame = CGRectMake(0, 0, 50, 50);
+    [leftView setActivityIndicatorViewStyle:UIActivityIndicatorViewStyleMedium];
+    [leftView startAnimating];
+    [leftView setColor:UIColor.whiteColor];
+    [leftView setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis: UILayoutConstraintAxisHorizontal];
     
-    [self addSubview:stackView];
+    UIButton* rightView = [UIButton new];
+    rightView.frame = CGRectMake(0, 0, 25, 25);
+    [rightView setTitle:@"Dismiss" forState:UIControlStateNormal];
+    rightView.font = [UIFont systemFontOfSize:12.0 weight:UIFontWeightMedium];
+    [rightView setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis: UILayoutConstraintAxisHorizontal];
+
+    UIStackView* horizontalStackView = [UIStackView new];
+    horizontalStackView.translatesAutoresizingMaskIntoConstraints = NO;
+    horizontalStackView.axis = UILayoutConstraintAxisHorizontal;
+    horizontalStackView.distribution = UIStackViewDistributionFill;
+//    [horizontalStackView addArrangedSubview:leftView];
+    [horizontalStackView addArrangedSubview:textStackView];
+    [horizontalStackView addArrangedSubview:rightView];
+    horizontalStackView.spacing = 8.0;
     
-    NSArray* stackViewConstraints = [NSArray arrayWithObjects:
-        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:20.0],
-        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-8.0],
-        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:8.0],
-        [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:-8.0],
+    [self addSubview:horizontalStackView];
+    
+    NSArray* horizontalStackViewConstraints = [NSArray arrayWithObjects:
+        [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:28.0],
+        [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-8.0],
+        [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:8.0],
+        [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:-8.0],
     nil];
     
-    [NSLayoutConstraint activateConstraints:stackViewConstraints];
-    [self addConstraints:stackViewConstraints];
+    [NSLayoutConstraint activateConstraints:horizontalStackViewConstraints];
+    [self addConstraints:horizontalStackViewConstraints];
     
-    //set banners width constraint
+    //set width constraint
     NSArray* constraints = [NSArray arrayWithObjects:
         [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:self.superview.frame.size.width],
     nil];

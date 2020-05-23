@@ -19,6 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)presentOnView:(UIView*)view;
 -(void)dismiss;
 
+/// unavailable API
+-(void)setFrame:(CGRect)frame     __attribute__((unavailable("frame is calculated based on content size.")));
+-(void)setBounds:(CGRect)bounds   __attribute__((unavailable("bounds is calculated based on content size.")));
+-(void)addSubview:(UIView *)view  __attribute__((unavailable("use leftView and rightView properties to add a custom view.")));
+
 @end
 
 NS_ASSUME_NONNULL_END
