@@ -19,6 +19,10 @@
 		D320AF8C24567696000BA8B3 /* PanGestureHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF8B24567696000BA8B3 /* PanGestureHandler.m */; };
 		D320AF8F245676C3000BA8B3 /* Animator.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF8E245676C3000BA8B3 /* Animator.m */; };
 		D320AF9424567D02000BA8B3 /* FloatingBannerView.m in Sources */ = {isa = PBXBuildFile; fileRef = D320AF9324567D02000BA8B3 /* FloatingBannerView.m */; };
+		D369DE072479854B006FB417 /* BannerViewPresentationPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = D369DE062479854B006FB417 /* BannerViewPresentationPosition.m */; };
+		D369DE0A247985A6006FB417 /* BannerViewPresentationPositionFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = D369DE09247985A6006FB417 /* BannerViewPresentationPositionFactory.m */; };
+		D369DE0E24799078006FB417 /* BannerViewPresentationPositionTop.m in Sources */ = {isa = PBXBuildFile; fileRef = D369DE0D24799078006FB417 /* BannerViewPresentationPositionTop.m */; };
+		D369DE11247ADAB2006FB417 /* BannerViewPresentationPositionBottom.m in Sources */ = {isa = PBXBuildFile; fileRef = D369DE10247ADAB2006FB417 /* BannerViewPresentationPositionBottom.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +49,15 @@
 		D320AF8E245676C3000BA8B3 /* Animator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Animator.m; sourceTree = "<group>"; };
 		D320AF9224567D02000BA8B3 /* FloatingBannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FloatingBannerView.h; sourceTree = "<group>"; };
 		D320AF9324567D02000BA8B3 /* FloatingBannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FloatingBannerView.m; sourceTree = "<group>"; };
+		D369DE0224797F19006FB417 /* BannerViewPresentationPositionType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewPresentationPositionType.h; sourceTree = "<group>"; };
+		D369DE052479854B006FB417 /* BannerViewPresentationPosition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewPresentationPosition.h; sourceTree = "<group>"; };
+		D369DE062479854B006FB417 /* BannerViewPresentationPosition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BannerViewPresentationPosition.m; sourceTree = "<group>"; };
+		D369DE08247985A6006FB417 /* BannerViewPresentationPositionFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewPresentationPositionFactory.h; sourceTree = "<group>"; };
+		D369DE09247985A6006FB417 /* BannerViewPresentationPositionFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BannerViewPresentationPositionFactory.m; sourceTree = "<group>"; };
+		D369DE0C24799078006FB417 /* BannerViewPresentationPositionTop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewPresentationPositionTop.h; sourceTree = "<group>"; };
+		D369DE0D24799078006FB417 /* BannerViewPresentationPositionTop.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BannerViewPresentationPositionTop.m; sourceTree = "<group>"; };
+		D369DE0F247ADAB2006FB417 /* BannerViewPresentationPositionBottom.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewPresentationPositionBottom.h; sourceTree = "<group>"; };
+		D369DE10247ADAB2006FB417 /* BannerViewPresentationPositionBottom.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BannerViewPresentationPositionBottom.m; sourceTree = "<group>"; };
 		D3C2EBAA246638E50030F6AB /* BannerViewStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewStyle.h; sourceTree = "<group>"; };
 		D3C2EBAB24663AFF0030F6AB /* BannerViewStyleSuccess.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BannerViewStyleSuccess.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -92,6 +105,7 @@
 				D320AF522453C9BC000BA8B3 /* main.m */,
 				D320AF592453CA09000BA8B3 /* BannerView.h */,
 				D320AF5A2453CA09000BA8B3 /* BannerView.m */,
+				D369DE0B2479901B006FB417 /* Position */,
 				D3C2EBAA246638E50030F6AB /* BannerViewStyle.h */,
 				D3C2EBAB24663AFF0030F6AB /* BannerViewStyleSuccess.h */,
 				D320AF8424550EB1000BA8B3 /* BannerPresentationState.h */,
@@ -121,6 +135,22 @@
 				D320AF9324567D02000BA8B3 /* FloatingBannerView.m */,
 			);
 			path = FloatingBannerView;
+			sourceTree = "<group>";
+		};
+		D369DE0B2479901B006FB417 /* Position */ = {
+			isa = PBXGroup;
+			children = (
+				D369DE052479854B006FB417 /* BannerViewPresentationPosition.h */,
+				D369DE062479854B006FB417 /* BannerViewPresentationPosition.m */,
+				D369DE0C24799078006FB417 /* BannerViewPresentationPositionTop.h */,
+				D369DE0D24799078006FB417 /* BannerViewPresentationPositionTop.m */,
+				D369DE0F247ADAB2006FB417 /* BannerViewPresentationPositionBottom.h */,
+				D369DE10247ADAB2006FB417 /* BannerViewPresentationPositionBottom.m */,
+				D369DE0224797F19006FB417 /* BannerViewPresentationPositionType.h */,
+				D369DE08247985A6006FB417 /* BannerViewPresentationPositionFactory.h */,
+				D369DE09247985A6006FB417 /* BannerViewPresentationPositionFactory.m */,
+			);
+			path = Position;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -194,13 +224,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D369DE11247ADAB2006FB417 /* BannerViewPresentationPositionBottom.m in Sources */,
 				D320AF8F245676C3000BA8B3 /* Animator.m in Sources */,
 				D320AF8C24567696000BA8B3 /* PanGestureHandler.m in Sources */,
 				D320AF482453C9BA000BA8B3 /* ViewController.m in Sources */,
+				D369DE0A247985A6006FB417 /* BannerViewPresentationPositionFactory.m in Sources */,
 				D320AF892456743A000BA8B3 /* BaseBannerView.m in Sources */,
 				D320AF9424567D02000BA8B3 /* FloatingBannerView.m in Sources */,
 				D320AF422453C9BA000BA8B3 /* AppDelegate.m in Sources */,
+				D369DE0E24799078006FB417 /* BannerViewPresentationPositionTop.m in Sources */,
 				D320AF532453C9BC000BA8B3 /* main.m in Sources */,
+				D369DE072479854B006FB417 /* BannerViewPresentationPosition.m in Sources */,
 				D320AF5B2453CA09000BA8B3 /* BannerView.m in Sources */,
 				D320AF452453C9BA000BA8B3 /* SceneDelegate.m in Sources */,
 			);

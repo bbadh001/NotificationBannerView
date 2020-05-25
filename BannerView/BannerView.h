@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "BannerPresentationState.h"
+#import "BannerViewPresentationPositionType.h"
 //#import "BannerViewStyleSuccess.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -16,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithTitle:(NSString *)mainTitle subTitle:(NSString *)subTitle;
 
--(void)presentOnView:(UIView*)view;
+-(void)presentOnViewController:(UIViewController*)vc withPosition:(BannerViewPresentationPositionType)positionType;
 -(void)dismiss;
 
 /// unavailable API

@@ -8,7 +8,8 @@
 
 #import "BannerView.h"
 #import "BannerPresentationState.h"
-
+#import "BannerViewPresentationPosition.h"
+#import "BannerViewPresentationPositionFactory.h"
 
 #define kAnimationVelocityDefault 300.0
 #define kDismissalVelocityAnimationDefault 150.0
@@ -22,6 +23,8 @@
 @interface BannerView ()
 
 @property (nonatomic) BannerPresentationState presentationState;
+@property (nonatomic) BannerViewPresentationPosition* positions;
+@property (nonatomic) BannerViewPresentationPositionType positionType;
 
 @property (nonatomic, copy) NSString* mainTitleText;
 @property (nonatomic, copy) NSString* subTitleText;
@@ -34,6 +37,7 @@
 @property (nonatomic) CGFloat mainTitleLabelLeftPadding;
 @property (nonatomic) CGFloat subTitleLabelLeftPadding;
 
+@property (nonatomic) NSLayoutConstraint* superviewBorderConstraint;
 @property (nonatomic) NSLayoutConstraint* widthConstraint;
 
 @property (nonatomic) UIPanGestureRecognizer* panGesture;
@@ -78,7 +82,7 @@
     [textStackView setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
 
     UIActivityIndicatorView* leftView = [UIActivityIndicatorView new];
-    leftView.frame = CGRectMake(0, 0, 50, 50);
+    leftView.frame = CGRectMake(0, 0, 25, 25);
     [leftView setActivityIndicatorViewStyle:UIActivityIndicatorViewStyleMedium];
     [leftView startAnimating];
     [leftView setColor:UIColor.whiteColor];
@@ -102,7 +106,7 @@
     [self addSubview:horizontalStackView];
     
     NSArray* horizontalStackViewConstraints = [NSArray arrayWithObjects:
-        [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:28.0],
+        [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant: self.positionType == BannerViewPresentationPositionTypeTop ? 28.0 : 8.0],
         [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-8.0],
         [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeading multiplier:1.0 constant:8.0],
         [NSLayoutConstraint constraintWithItem:horizontalStackView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:-8.0],
@@ -111,9 +115,10 @@
     [NSLayoutConstraint activateConstraints:horizontalStackViewConstraints];
     [self addConstraints:horizontalStackViewConstraints];
     
-    //set width constraint
+    //self with superview constraints:
+    self.widthConstraint = [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:self.superview.frame.size.width];
     NSArray* constraints = [NSArray arrayWithObjects:
-        [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:self.superview.frame.size.width],
+        self.widthConstraint,
     nil];
 
     [NSLayoutConstraint activateConstraints:constraints];
@@ -121,7 +126,20 @@
     
     [self setNeedsLayout];
     [self layoutIfNeeded];
+    
+    //set top constraint
+    NSLayoutConstraint* topConstraint = [NSLayoutConstraint constraintWithItem:self.superview attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1.0 constant:self.frame.size.height];
+    NSArray* topConstraints = [NSArray arrayWithObjects:
+        topConstraint,
+    nil];
+    
+    self.superviewBorderConstraint = topConstraint;
 
+    [NSLayoutConstraint activateConstraints:topConstraints];
+    [self.superview addConstraints:constraints];
+    
+    [self.superview setNeedsLayout];
+    [self.superview layoutIfNeeded];
 }
 
 -(void)setupGestureRecongizers {
@@ -157,28 +175,27 @@
 }
 
 #pragma mark Public Methods
--(void)presentOnView:(UIView*)view {
+-(void)presentOnViewController:(UIViewController*)vc withPosition:(BannerViewPresentationPositionType)positionType {
     // make sure we have a superview to present on
-    if (!view) { return; }
+    if (!vc) { return; }
 
     // make sure we are in the hidden state
     if (self.presentationState != BannerPresentationStateHidden &&
         self.presentationState != BannerPresentationStateAnimatingDismissal) { return; }
     
     // add banner to superview...
-    // now we can start configuring constrints as we know our superview
-    [view addSubview:self];
+    // now we can start configuring constraints as we know our superview
+    [vc.view addSubview:self];
+    self.positionType = positionType;
     [self configureConstraints];
-        
-    // init banner right off the edge of its superview
-    self.frame = CGRectMake(0,  -self.frame.size.height,  self.frame.size.width,  self.frame.size.height);
     
     // pan gesture recongizer will be toggled on/off on present and dismiss respectively just as a precaution to avoid any possible bad states (e.g being able to touch banner when its off screen after being dismissed)
     [self.panGesture setEnabled:YES];
 
     // present the banner
     self.presentationState = BannerPresentationStateAnimatingPresentation;
-    [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
+    [self animateConstraint: self.superviewBorderConstraint
+         toNewConstantValue: 0.0
                withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
             springDamping: 0.7
@@ -200,7 +217,8 @@
     
     [self.layer removeAllAnimations];
     self.presentationState = BannerPresentationStateAnimatingDismissal;
-    [self animateToPosition: CGRectMake(0.0, -self.frame.size.height, self.frame.size.width, self.frame.size.height)
+    [self animateConstraint: self.superviewBorderConstraint
+            toNewConstantValue: self.frame.size.height
             withVelocity: kAnimationVelocityDefault
             initialVelocity: 0.0
             springDamping: 1.0
@@ -220,27 +238,29 @@
 /// General animation method
 ///
 ///
--(void)animateToPosition:(CGRect)targetPosition
+-(void)animateConstraint:(NSLayoutConstraint*)constraint
+            toNewConstantValue:(CGFloat)constant
             withVelocity:(CGFloat)velocity
          initialVelocity:(CGFloat)initialVelocity
            springDamping:(CGFloat)springDampingCoef
             onCompletion:(void (^)(BOOL finished))completionBlock {
     [self.layer removeAllAnimations];
 
-    CGRect currentPosition = self.frame;
-    CGFloat distanceToTargetPosition = fabs(currentPosition.origin.y-targetPosition.origin.y);
-    NSTimeInterval animationTime = distanceToTargetPosition/fabs(velocity);
+    CGFloat currentValue = self.superviewBorderConstraint.constant;
+    CGFloat distanceToTargetValue = fabs(currentValue-constant);
+    NSTimeInterval animationTime = distanceToTargetValue/fabs(velocity);
 
-//    NSLog(@"animate time %f", animationTime);
+    NSLog(@"animate time %f", animationTime);
 
-    
+    [self.superview layoutIfNeeded];
     [UIView animateWithDuration: animationTime
                           delay: 0.0
          usingSpringWithDamping: springDampingCoef
           initialSpringVelocity: initialVelocity
                         options: UIViewAnimationOptionAllowUserInteraction
         animations: ^{
-              self.frame = targetPosition;
+            self.superviewBorderConstraint.constant = constant;
+            [self.superview layoutIfNeeded];
         }
         completion: ^(BOOL finished) {
             completionBlock(finished);
@@ -281,7 +301,8 @@
         } else {
             //animate back to presentation state
             self.presentationState = BannerPresentationStateAnimatingPresentation;
-            [self animateToPosition: CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height)
+            [self animateConstraint: self.superviewBorderConstraint
+                 toNewConstantValue: 0.0
                        withVelocity: kAnimationVelocityMin
                     initialVelocity: 0.0
                       springDamping: 0.7
@@ -292,7 +313,7 @@
         }
     } else {
         //not close to edge yet, so move banner wherever the touch guides us
-        CGRect nextPosition = self.frame;
+        CGRect nextPosition = CGRectZero;
         if (delta.y < 0) {
             //user is guiding the banner up
             nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.frame.size.width, self.frame.size.height);
@@ -304,9 +325,11 @@
                 nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y, self.frame.size.width, self.frame.size.height);
             } else {
                 //inverse movement
-                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.5/self.frame.origin.y), self.frame.size.width, self.frame.size.height);
+//                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.5/self.frame.origin.y), self.frame.size.width, self.frame.size.height);
+                nextPosition = CGRectMake(0.0, self.frame.origin.y + delta.y*(0.05), self.frame.size.width, self.frame.size.height);
             }
         }
+//        self.transform = CGAffineTransformMakeTranslation(nextPosition.origin.x, nextPosition.origin.y);
         self.frame = nextPosition;
     }
 
@@ -329,8 +352,13 @@
 
 -(void)handleRotation {
     if (!self.superview) { return; }
-//    self.widthConstraint.constant = self.superview.frame.size.width;
-//    [self setNeedsLayout];
-//    [self layoutIfNeeded];
+    // update width
+    self.widthConstraint.constant = self.superview.frame.size.width;
+    // if top banner, adjust internal spacing for extra space for status bar accordingly
+    if (self.positionType == BannerViewPresentationPositionTypeTop) {
+        
+    }
+    [self layoutIfNeeded];
+    [self setNeedsUpdateConstraints];
 }
 @end

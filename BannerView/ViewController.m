@@ -23,15 +23,16 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     BannerView* banner = [[BannerView alloc]
-                          initWithTitle:@"Success notifcation!"
-                          subTitle:@"A simple banner that presents and dismisses. In other words, a banner that presents and dismisses that is simple."
+                          initWithTitle:@"Feedback submitted!"
+                          subTitle:@"We'll be in touch shortly. We'll be in touch shortly. We'll be in touch shortly."
     ];
     self.bannerView = banner;
     [self.bannerView setBackgroundColor: [UIColor colorWithRed:.10 green:.63 blue:.37 alpha:1.0]];
 }
 
 - (IBAction)presentBtnTapped:(UIButton *)sender {
-    [self.bannerView presentOnView:self.view];
+    [self.bannerView presentOnViewController:self
+                                withPosition: BannerViewPresentationPositionTypeTop];
 }
 
 
